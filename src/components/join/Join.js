@@ -4,8 +4,11 @@ import Box from "@mui/material/Box";
 import blogImg from "../../images/blogImg.svg";
 import { Button, Grid, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
+import { selectIsLoggedIn } from "../../redux/slice/authSlice";
+import { useSelector } from "react-redux";
 
 const Join = () => {
+  const isLoggedIn = useSelector(selectIsLoggedIn)
   return (
     <Container
       maxWidth="xl"
@@ -44,7 +47,24 @@ const Join = () => {
             Connect with curious minds, tell your story and share your knowledge
             even just the way you want it
           </Typography>
-          <Button
+          {isLoggedIn ? (<>
+            <Button
+            sx={{
+              padding: "1rem",
+              bgcolor: "green",
+              color: "#fff",
+              borderRadius: "30px",
+              '&:hover' : {
+                bgcolor: 'darkgreen',
+                color: '#fff'
+              }
+            }}
+            component={Link}
+            to="/blog"
+          >
+            Visit Blog
+          </Button>
+          </>):(<><Button
             sx={{
               padding: "1rem",
               bgcolor: "green",
@@ -59,7 +79,8 @@ const Join = () => {
             to="/register"
           >
             Get started
-          </Button>
+          </Button></>)}
+          
         </Grid>
       </Grid>
     </Container>
