@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import backgroundImg from "../../images/rad.jpg";
@@ -10,6 +11,7 @@ import { useSelector } from "react-redux";
 
 const Banner = () => {
   const isLoggedIn = useSelector(selectIsLoggedIn);
+
 
   return (
     <Container

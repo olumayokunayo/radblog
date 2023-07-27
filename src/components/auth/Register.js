@@ -11,8 +11,11 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
 import { collection, addDoc } from "firebase/firestore";
 import Loader from "../loader/Loader";
+import { login } from "../../redux/slice/authSlice";
+import { useDispatch } from "react-redux";
 
 const Register = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,6 +32,31 @@ const Register = () => {
     setData({ ...data, [name]: value });
   };
 
+  // const formHandler = (e) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+  //   const { email, password, firstName, lastName } = data;
+  //   createUserWithEmailAndPassword(auth, email, password)
+  //     .then((userCredential) => {
+  //       // Signed in
+  //       const user = userCredential.user;
+  //       const displayName = `${firstName} ${lastName}`;
+
+  //       updateProfile(user, { displayName });
+  //       const userRef = addDoc(collection(db, "users"), {
+  //         firstName: firstName,
+  //         lastName: lastName,
+  //         email: email,
+  //       });
+  //       setIsLoading(false);
+  //       navigate("/");
+  //     })
+  //     .catch((error) => {
+  //       setIsLoading(false);
+  //       console.log(error.message);
+  //     });
+  // };
+
   const formHandler = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -40,6 +68,16 @@ const Register = () => {
         const displayName = `${firstName} ${lastName}`;
 
         updateProfile(user, { displayName });
+
+        // Dispatch the login action to update the Redux store with the user information
+        dispatch(
+          login({
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+          })
+        );
+
         const userRef = addDoc(collection(db, "users"), {
           firstName: firstName,
           lastName: lastName,
@@ -53,7 +91,6 @@ const Register = () => {
         console.log(error.message);
       });
   };
-
   const handleTogglePassword = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };

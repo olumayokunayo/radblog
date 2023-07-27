@@ -53,13 +53,11 @@ const Login = () => {
   const formHandler = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(data);
     signInWithEmailAndPassword(auth, data.email, data.password)
       .then((userCredential) => {
         const user = userCredential.user;
         setIsLoading(false);
         navigate("/");
-        console.log(user);
       })
       .catch((error) => {
         setIsLoading(false);

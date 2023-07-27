@@ -1,4 +1,4 @@
-import * as React from "react";
+import  {React} from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -23,16 +23,23 @@ import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
 
 const Header = () => {
+  
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const dispatch = useDispatch();
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // const [showWritePost, setShowWritePost] = useState(true)
   const [display, setDisplay] = useState("");
+ 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
-
+  // const jj = useCallback((event)=>{
+  //   if(event.target == event.currentTarget){
+  //     setShowWritePost(true)
+  //   }
+  // })
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
@@ -51,20 +58,17 @@ const Header = () => {
         navigate("/login");
       });
   };
+  const handleWritePost =()=> {
+    // setShowWritePost(false)
+    navigate('/write-blog')
+  }
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
+        console.log(user);
         const displayUsername = user.displayName.charAt(0).toLocaleUpperCase();
         setDisplay(displayUsername);
-        console.log(display);
-        // if (user.displayName === null){
-        //   const createUser = user.email.substring(0, user.email.indexOf('@'))
-        //   console.log(createUser);
-        //   const userName = createUser.charAt(0).toLocaleUpperCase + createUser.slice(1)
-        //   console.log(userName);
-        //   console.log('user is null');
-        // }
-        console.log(user);
+
         dispatch(
           login({
             firstName: user.firstName,
@@ -76,10 +80,11 @@ const Header = () => {
         dispatch(logout());
       }
     });
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
+      {/* <div onClick={(e)=>jj(e)}>iyutyrtrytuy</div> */}
       {isLoading && <Loader />}
       <Container maxWidth="lg">
         <Box sx={{ flexGrow: 1 }}>
@@ -92,7 +97,9 @@ const Header = () => {
               {isLoggedIn ? (
                 <>
                   <Button
+                  onClick={handleWritePost}
                     component={Link}
+                    to='/write-blog'
                     sx={{
                       bgcolor: "green",
                       padding: "1rem",
@@ -107,11 +114,19 @@ const Header = () => {
                       },
                     }}
                   >
-                    <Typography sx={{ textTransform: "none", textDecoration: 'none', color: '#fff'}} component={Link} to='/write-blog'>
+                    <Typography
+                      sx={{
+                        textTransform: "none",
+                        textDecoration: "none",
+                        color: "#fff",
+                      }}
+                    >
                       Write a Post
                     </Typography>
                     <CreateIcon />
                   </Button>
+              
+                
                   <Button
                     sx={{
                       "&:hover": {
