@@ -3,25 +3,20 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-const RichTextEditor = () => {
-  const [text, setText] = useState("");
+const RichTextEditor = ({onChange, value}) => {
 
-  // Handler function to update the text when the user edits the content
-  const handleTextChange = (value) => {
-    setText(value);
-  };
+
 
   return (
     <Container maxWidth="lg" sx={{ paddingTop: "2rem" }}>
       <ReactQuill 
-        value={text}
-        onChange={handleTextChange}
+      value={value}
+        onChange={onChange}
         placeholder="Write something..."
         style={{
           height: "30vh",
           width: "100%",
         }}
-    
         theme="snow" // Choose the editor theme (snow or bubble)
         modules={{
           toolbar: [

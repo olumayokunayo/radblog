@@ -1,15 +1,63 @@
-import * as React from "react";
+import React, { useState } from "react";
 import Container from "@mui/material/Container";
 import { Button, Typography } from "@mui/material";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 import CheckboxInput from "../checkbox/Checkbox";
 import { useNavigate } from "react-router-dom";
+import {
+  SAVE_BLOG_DATA,
+  selectImage,
+  selectTitle,
+  selectContent,
+} from "../../redux/slice/blogSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const ActionBlog = () => {
+  const image = useSelector(selectImage);
+  const title = useSelector(selectTitle);
+  const content = useSelector(selectContent);
+  const dispatch = useDispatch();
+  const [duration, setDuration] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const allItems = [
+    { id: 1, name: "Programming" },
+    { id: 2, name: "Marketing" },
+    { id: 3, name: "Culture" },
+    { id: 4, name: "Sports" },
+    { id: 5, name: "Writing" },
+    { id: 6, name: "Education" },
+  ];
+
+  // get selected names from ids
+  const getSelectedNames = () => {
+    return selectedItems.map((itemId) => {
+      const selectedItem = allItems.find((item) => item.id === itemId);
+      return selectedItem ? selectedItem.name : "";
+    });
+  };
+
+  //   back button
   const navigate = useNavigate();
   const backHandler = () => {
-    navigate('/write-blog')
+    navigate("/write-blog");
   };
+
+  //   publish / post blog handler
+  const publishHandler = () => {
+    const selectedNames = getSelectedNames();
+    const blogData = {
+      title,
+      image,
+      content,
+      duration,
+      categories: selectedNames,
+    };
+    console.log(blogData);
+    dispatch(SAVE_BLOG_DATA(blogData));
+    // console.log(duration, selectedNames);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ height: "100vh" }}>
       <Container maxWidth="lg" sx={{ marginTop: "1rem" }}>
@@ -47,6 +95,7 @@ const ActionBlog = () => {
             border: "3px solid green",
             borderRadius: "10px",
           }}
+          onChange={(e) => setDuration(e.target.value)}
         />
       </Container>
       <Container
@@ -70,25 +119,27 @@ const ActionBlog = () => {
           <span style={{ fontWeight: 600 }}>Note: </span> Only categories in
           your interests are populated here.
         </Typography>
-        <CheckboxInput />
+        <CheckboxInput
+          selectedItems={selectedItems}
+          setSelectedItems={setSelectedItems}
+        />
       </Container>
-      <Container maxWidth="xl" sx={{ paddingTop: "4rem" }}>
-        <Button
-          // onClick={nextHandler}
-          sx={{
-            marginLeft: "52rem",
-            padding: "0.5rem 3rem",
-            bgcolor: "green",
-            borderRadius: "25px",
-            color: "#fff",
-            "&:hover": {
-              bgcolor: "darkgreen",
-            },
-          }}
-        >
-          Publish
-        </Button>
-      </Container>
+      <Button
+        onClick={publishHandler}
+        sx={{
+          marginTop: "2rem",
+          marginLeft: "40rem",
+          padding: "0.5rem 3rem",
+          bgcolor: "green",
+          borderRadius: "25px",
+          color: "#fff",
+          "&:hover": {
+            bgcolor: "darkgreen",
+          },
+        }}
+      >
+        Publish
+      </Button>
     </Container>
   );
 };
