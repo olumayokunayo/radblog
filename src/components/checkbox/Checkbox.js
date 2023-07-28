@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 
-const CheckboxInput = () => {
-  const [selectedItems, setSelectedItems] = useState([]);
+const CheckboxInput = ({selectedItems, setSelectedItems}) => {
+    
+  
   const allItems = [
     { id: 1, name: "Programming" },
     { id: 2, name: "Marketing" },
@@ -43,9 +44,9 @@ const CheckboxInput = () => {
       </div>
       <input
         type="text"
-        value={selectedItems
-          .map((itemId) => allItems.find((item) => item.id === itemId).name)
-          .join(", ")}
+        value={selectedItems.map(
+          (itemId) => allItems.find((item) => item.id === itemId).name
+        ).join("   ")}
         readOnly
         style={{
           textTransform: "uppercase",
