@@ -1,4 +1,4 @@
-import  {React} from "react";
+import { React, useCallback } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -8,7 +8,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "../logo/Logo";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, logout, selectIsLoggedIn } from "../../redux/slice/authSlice";
+import {
+  login,
+  logout,
+  selectFirstName,
+  selectIsLoggedIn,
+  user_name,
+} from "../../redux/slice/authSlice";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import CreateIcon from "@mui/icons-material/Create";
@@ -21,25 +27,22 @@ import InterestsIcon from "@mui/icons-material/Interests";
 import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
+import { SHOW_WRITE_POST, selectIsShown } from "../../redux/slice/showSlice";
+// import { getUser } from "../auth/Functions";
 
 const Header = () => {
-  
+  const isShown = useSelector(selectIsShown);
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const dispatch = useDispatch();
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  // const [showWritePost, setShowWritePost] = useState(true)
   const [display, setDisplay] = useState("");
- 
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
-  // const jj = useCallback((event)=>{
-  //   if(event.target == event.currentTarget){
-  //     setShowWritePost(true)
-  //   }
-  // })
+
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
@@ -58,33 +61,39 @@ const Header = () => {
         navigate("/login");
       });
   };
-  const handleWritePost =()=> {
-    // setShowWritePost(false)
-    navigate('/write-blog')
-  }
+  const handleWritePost = () => {
+    dispatch(SHOW_WRITE_POST(false));
+    navigate("/write-blog");
+  };
+
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
+    // getUser(dispatch())
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log(user);
+        const {uid, displayName, email} = user
+        console.log(uid, displayName, email);
         const displayUsername = user.displayName.charAt(0).toLocaleUpperCase();
         setDisplay(displayUsername);
+        console.log(displayUsername);
 
+        dispatch(login(user));
         dispatch(
-          login({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
+          user_name({
+            username: displayUsername,
           })
         );
       } else {
         dispatch(logout());
       }
     });
+    return () => unsubscribe();
   }, [dispatch]);
+  
+  console.log(display);
 
   return (
     <>
-      {/* <div onClick={(e)=>jj(e)}>iyutyrtrytuy</div> */}
       {isLoading && <Loader />}
       <Container maxWidth="lg">
         <Box sx={{ flexGrow: 1 }}>
@@ -97,9 +106,9 @@ const Header = () => {
               {isLoggedIn ? (
                 <>
                   <Button
-                  onClick={handleWritePost}
+                    onClick={handleWritePost}
                     component={Link}
-                    to='/write-blog'
+                    to="/write-blog"
                     sx={{
                       bgcolor: "green",
                       padding: "1rem",
@@ -125,8 +134,7 @@ const Header = () => {
                     </Typography>
                     <CreateIcon />
                   </Button>
-              
-                
+
                   <Button
                     sx={{
                       "&:hover": {

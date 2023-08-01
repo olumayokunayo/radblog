@@ -3,14 +3,11 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-const RichTextEditor = ({onChange, value}) => {
-
-
-
+const RichTextEditor = ({ onChange, value }) => {
   return (
     <Container maxWidth="lg" sx={{ paddingTop: "2rem" }}>
-      <ReactQuill 
-      value={value}
+      <ReactQuill
+        value={value}
         onChange={onChange}
         placeholder="Write something..."
         style={{

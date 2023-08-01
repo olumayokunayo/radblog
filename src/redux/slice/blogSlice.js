@@ -13,7 +13,6 @@ const blogSlice = createSlice({
   initialState,
   reducers: {
     SAVE_BLOG_DATA(state, action) {
-      console.log(action.payload);
       const { title, image, content, duration, categories } = action.payload;
       state.title = title;
       state.image = image;

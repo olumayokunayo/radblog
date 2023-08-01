@@ -3,13 +3,13 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Logo = () => {
-  const navigate = useNavigate()
-  const homeBtn =()=> {
-    navigate('/')
-  }
+  const navigate = useNavigate();
+  const homeBtn = () => {
+    navigate("/");
+  };
   return (
     <Typography
-    onClick={homeBtn}
+      onClick={homeBtn}
       variant="h4"
       component={Link}
       to="/"
@@ -19,6 +19,7 @@ const Logo = () => {
         textDecoration: "none",
         fontWeight: 600,
         elevation: 0,
+        letterSpacing: -2
       }}
     >
       Rad<span style={{ color: "green" }}>Blog</span>

@@ -15,7 +15,6 @@ const WriteBlog = () => {
   const [title, setTitle] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageURL, setImageURL] = useState("");
-
   const [content, setContent] = useState("");
 
   // Validate fields
@@ -34,7 +33,6 @@ const WriteBlog = () => {
 
   // handle text editor
   const handleRichTextChange = (value) => {
-    console.log(value);
     setContent(value);
   };
 
@@ -52,22 +50,20 @@ const WriteBlog = () => {
       };
 
       reader.readAsDataURL(imageFile);
-      console.log(imageFile);
     } else {
       setSelectedImage(null);
       setImageURL("");
     }
-    console.log(imageURL);
   };
 
   // next handler
   const nextHandler = () => {
-    console.log(title, content);
     const isValid = validateFields();
 
     if (isValid) {
       const blogData = {
         title,
+        // postedBy: 
         image: selectedImage,
         content,
       };
@@ -80,7 +76,7 @@ const WriteBlog = () => {
       <Box sx={{ bgcolor: "#fff", height: "50vh" }}>
         <ToastContainer />
         <Container maxWidth="lg" sx={{ display: "flex", gap: "1rem" }}>
-          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "#b6b6b6 " }} />
+          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "darkgreen" }} />
           <input
             type="text"
             placeholder="Title"
@@ -88,8 +84,11 @@ const WriteBlog = () => {
             style={{
               border: "none",
               outline: "none",
-              fontSize: "1.5rem",
+              fontSize: "1rem",
               color: "black",
+              "&::placeholder": {
+                color: "red",
+              },
             }}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -98,7 +97,7 @@ const WriteBlog = () => {
           maxWidth="lg"
           sx={{ display: "flex", gap: "1rem", paddingTop: "2rem" }}
         >
-          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "#b6b6b6 " }} />
+          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "darkgreen " }} />
           <input
             width="100%"
             type="file"
@@ -108,17 +107,11 @@ const WriteBlog = () => {
             cols={100}
             rows={3}
             style={{
-              display: "none",
               cursor: "pointer",
             }}
             onChange={handleImageChange}
           />
-          <label
-            htmlFor="fileInput"
-            style={{ cursor: "pointer", fontSize: "1.5rem", color: "#b6b6b6" }}
-          >
-            Add Image
-          </label>
+          
         </Container>
         {imageURL && (
           <div>

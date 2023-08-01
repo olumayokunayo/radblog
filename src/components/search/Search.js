@@ -13,7 +13,7 @@ const Search = () => {
           style={{
             padding: '0rem 1rem',
             height: "3.2rem",
-            width: "92%",
+            width: "80%",
             outline: "none",
             border: "0.1px solid gray",
             borderTopLeftRadius: "8px",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
 import { Button, Typography } from "@mui/material";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
@@ -11,14 +11,37 @@ import {
   selectContent,
 } from "../../redux/slice/blogSlice";
 import { useDispatch, useSelector } from "react-redux";
-
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  getDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db, storage } from "../../firebase/config";
+import { ADD_BLOG } from "../../redux/slice/postSlice";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { selectFirstName, selectUser } from "../../redux/slice/authSlice";
 const ActionBlog = () => {
   const image = useSelector(selectImage);
   const title = useSelector(selectTitle);
+  // const firstName = useSelector(selectFirstName);
   const content = useSelector(selectContent);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
   const [duration, setDuration] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
+
+  const [date, setdate] = useState([]);
+  const [namee, setNamee] = useState();
+  const user = useSelector(selectUser);
+  const firstName = useSelector(selectFirstName);
+  const [currentUserData, setCurrentUserData] = useState(null);
+  console.log(user);
+  console.log(firstName);
 
   const allItems = [
     { id: 1, name: "Programming" },
@@ -43,19 +66,77 @@ const ActionBlog = () => {
     navigate("/write-blog");
   };
 
+  useEffect(() => {
+    fetchUserData();
+    // mapp()
+  }, []);
+
+  const fetchUserData = () => {
+    try {
+      setIsLoading(true);
+      const blogsRef = collection(db, "users");
+      const q = query(blogsRef);
+      onSnapshot(q, (snapshot) => {
+        const allUsers = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          user: user,
+        }));
+        console.log(allUsers);
+        let lill = allUsers.filter((val, index) => user == val.id);
+        console.log(lill);
+        // setdate(allUsers)
+        setIsLoading(false);
+      });
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error.message);
+    }
+  };
+
+  // console.log(date);
+
+  // const mapp = () => {
+  //   let lill =  date.filter((val, index) => val.id === user)
+  //   console.log(lill);
+  //   setNamee(lill)
+  // }
+  // mapp()/
+  // const
+  // // Get the first name from currentUserData, if available
+  // const firstName = currentUserData ? currentUserData.firstName : null;
+  // console.log(firstName);
+
   //   publish / post blog handler
-  const publishHandler = () => {
-    const selectedNames = getSelectedNames();
-    const blogData = {
-      title,
-      image,
-      content,
-      duration,
-      categories: selectedNames,
-    };
-    console.log(blogData);
-    dispatch(SAVE_BLOG_DATA(blogData));
-    // console.log(duration, selectedNames);
+  const publishHandler = async () => {
+    try {
+      const storageRef = ref(storage, `blog-images/${image.name}`);
+      await uploadBytes(storageRef, image);
+      const imageURL = await getDownloadURL(storageRef);
+      console.log(imageURL);
+
+      const selectedNames = getSelectedNames();
+
+      const blogData = {
+        title,
+        imageURL,
+        content,
+        duration,
+        postedBy: firstName,
+        categories: selectedNames,
+        createdAt: Timestamp.now().toDate(),
+      };
+      console.log(blogData);
+
+      const docRef = await addDoc(collection(db, "blogs"), blogData);
+      dispatch(SAVE_BLOG_DATA(blogData));
+
+      // save blogs to redux
+      dispatch(ADD_BLOG({ id: docRef.id, ...blogData }));
+      console.log("save success");
+    } catch (error) {
+      console.log(error.message);
+    }
   };
 
   return (
@@ -140,6 +221,7 @@ const ActionBlog = () => {
       >
         Publish
       </Button>
+      {namee}
     </Container>
   );
 };

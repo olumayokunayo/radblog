@@ -12,8 +12,11 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import Loader from "../loader/Loader";
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/slice/authSlice";
 
 const Login = () => {
+  const dispatch = useDispatch()
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +56,16 @@ const Login = () => {
   const formHandler = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    signInWithEmailAndPassword(auth, data.email, data.password)
+
+    const { email, password } = data;
+    signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-        setIsLoading(false);
+         // Dispatch the login action to update the Redux store with the user information
+         setIsLoading(false);
+         dispatch(
+          login(user)
+        );
         navigate("/");
       })
       .catch((error) => {

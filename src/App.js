@@ -7,6 +7,7 @@ import Login from "./components/auth/Login";
 import Blog from "./components/blog/Blog";
 import WriteBlog from "./components/writeBlog/WriteBlog";
 import ActionBlog from "./components/writeBlog/ActionBlog";
+import BlogDetails from "./components/blog/BlogDetails";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/write-blog" element={<WriteBlog />} />
           <Route path="/write-action" element={<ActionBlog />} />
+          <Route path="/blog/:id" element={<BlogDetails />} />
         </Routes>
       </BrowserRouter>
     </>

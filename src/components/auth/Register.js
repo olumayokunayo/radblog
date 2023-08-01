@@ -11,11 +11,11 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
 import { collection, addDoc } from "firebase/firestore";
 import Loader from "../loader/Loader";
-import { login } from "../../redux/slice/authSlice";
+import { login, signup } from "../../redux/slice/authSlice";
 import { useDispatch } from "react-redux";
 
 const Register = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,35 +32,12 @@ const Register = () => {
     setData({ ...data, [name]: value });
   };
 
-  // const formHandler = (e) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-  //   const { email, password, firstName, lastName } = data;
-  //   createUserWithEmailAndPassword(auth, email, password)
-  //     .then((userCredential) => {
-  //       // Signed in
-  //       const user = userCredential.user;
-  //       const displayName = `${firstName} ${lastName}`;
-
-  //       updateProfile(user, { displayName });
-  //       const userRef = addDoc(collection(db, "users"), {
-  //         firstName: firstName,
-  //         lastName: lastName,
-  //         email: email,
-  //       });
-  //       setIsLoading(false);
-  //       navigate("/");
-  //     })
-  //     .catch((error) => {
-  //       setIsLoading(false);
-  //       console.log(error.message);
-  //     });
-  // };
-
   const formHandler = (e) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log(data);
     const { email, password, firstName, lastName } = data;
+    console.log(email, password, firstName, lastName);
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
@@ -71,7 +48,7 @@ const Register = () => {
 
         // Dispatch the login action to update the Redux store with the user information
         dispatch(
-          login({
+          signup({
             firstName: firstName,
             lastName: lastName,
             email: email,
@@ -84,7 +61,7 @@ const Register = () => {
           email: email,
         });
         setIsLoading(false);
-        navigate("/");
+        navigate("/login");
       })
       .catch((error) => {
         setIsLoading(false);
@@ -96,7 +73,7 @@ const Register = () => {
   };
   return (
     <>
-    {isLoading && <Loader />}
+      {isLoading && <Loader />}
       <Container
         maxWidth="xs"
         sx={{ marginTop: "2rem", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}
@@ -134,7 +111,6 @@ const Register = () => {
             <div>
               <TextField
                 label="First Name"
-                //   id="outlined-size-small"
                 size="medium"
                 name="firstName"
                 value={data.firstName}
@@ -152,7 +128,6 @@ const Register = () => {
             <div>
               <TextField
                 label="Email Address"
-                //   id="filled-size-small"
                 variant="filled"
                 size="small"
                 name="email"
@@ -162,7 +137,6 @@ const Register = () => {
               <TextField
                 label="Password"
                 type={showPassword ? "text" : "password"}
-                //   id="outlined-size-small"
                 size="medium"
                 name="password"
                 value={data.password}
@@ -171,7 +145,6 @@ const Register = () => {
               <TextField
                 label="Confirm Password"
                 type={showPassword ? "text" : "password"}
-                //   id="outlined-size-normal"
                 size="medium"
                 name="confirmPassword"
                 value={data.confirmPassword}
