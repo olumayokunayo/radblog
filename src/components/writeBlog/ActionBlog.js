@@ -15,33 +15,28 @@ import {
   collection,
   addDoc,
   Timestamp,
-  getDoc,
-  doc,
   onSnapshot,
-  orderBy,
   query,
 } from "firebase/firestore";
 import { db, storage } from "../../firebase/config";
 import { ADD_BLOG } from "../../redux/slice/postSlice";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { selectFirstName, selectUser } from "../../redux/slice/authSlice";
+import { selectDisplayName, selectUser } from "../../redux/slice/authSlice";
+
 const ActionBlog = () => {
+  const navigate = useNavigate();
   const image = useSelector(selectImage);
   const title = useSelector(selectTitle);
-  // const firstName = useSelector(selectFirstName);
   const content = useSelector(selectContent);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [duration, setDuration] = useState("");
   const [selectedItems, setSelectedItems] = useState([]);
+  const displayName = useSelector(selectDisplayName);
 
-  const [date, setdate] = useState([]);
-  const [namee, setNamee] = useState();
   const user = useSelector(selectUser);
-  const firstName = useSelector(selectFirstName);
   const [currentUserData, setCurrentUserData] = useState(null);
-  console.log(user);
-  console.log(firstName);
+  console.log(displayName);
 
   const allItems = [
     { id: 1, name: "Programming" },
@@ -61,14 +56,12 @@ const ActionBlog = () => {
   };
 
   //   back button
-  const navigate = useNavigate();
   const backHandler = () => {
     navigate("/write-blog");
   };
 
   useEffect(() => {
     fetchUserData();
-    // mapp()
   }, []);
 
   const fetchUserData = () => {
@@ -82,9 +75,6 @@ const ActionBlog = () => {
           ...doc.data(),
           user: user,
         }));
-        console.log(allUsers);
-        let lill = allUsers.filter((val, index) => user == val.id);
-        console.log(lill);
         // setdate(allUsers)
         setIsLoading(false);
       });
@@ -94,22 +84,10 @@ const ActionBlog = () => {
     }
   };
 
-  // console.log(date);
-
-  // const mapp = () => {
-  //   let lill =  date.filter((val, index) => val.id === user)
-  //   console.log(lill);
-  //   setNamee(lill)
-  // }
-  // mapp()/
-  // const
-  // // Get the first name from currentUserData, if available
-  // const firstName = currentUserData ? currentUserData.firstName : null;
-  // console.log(firstName);
-
   //   publish / post blog handler
   const publishHandler = async () => {
     try {
+      setIsLoading(true);
       const storageRef = ref(storage, `blog-images/${image.name}`);
       await uploadBytes(storageRef, image);
       const imageURL = await getDownloadURL(storageRef);
@@ -122,19 +100,21 @@ const ActionBlog = () => {
         imageURL,
         content,
         duration,
-        postedBy: firstName,
+        postedBy: displayName,
         categories: selectedNames,
         createdAt: Timestamp.now().toDate(),
       };
       console.log(blogData);
-
       const docRef = await addDoc(collection(db, "blogs"), blogData);
       dispatch(SAVE_BLOG_DATA(blogData));
 
       // save blogs to redux
       dispatch(ADD_BLOG({ id: docRef.id, ...blogData }));
+      setIsLoading(false);
+      navigate("/blog");
       console.log("save success");
     } catch (error) {
+      setIsLoading(false)
       console.log(error.message);
     }
   };
@@ -221,7 +201,6 @@ const ActionBlog = () => {
       >
         Publish
       </Button>
-      {namee}
     </Container>
   );
 };

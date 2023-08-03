@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import { Avatar, IconButton, Typography } from "@mui/material";
+import { Avatar, Box, IconButton, Tooltip, Typography } from "@mui/material";
 import Search from "../search/Search";
 import Interests from "../interests/Interests";
 import { SET_BLOG, selectBlogs } from "../../redux/slice/postSlice";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  collection,
-  doc,
-  getDoc,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase/config";
-import { selectFirstName, selectLastName } from "../../redux/slice/authSlice";
+import { selectDisplayName } from "../../redux/slice/authSlice";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Loader from "../loader/Loader";
 import DOMPurify from "dompurify";
@@ -22,6 +15,7 @@ import { Link } from "react-router-dom";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 
+// edit <p> tag from content
 const BlogPost = ({ content }) => {
   const sanitizedContent = DOMPurify.sanitize(content, {
     USE_PROFILES: { html: true },
@@ -37,63 +31,49 @@ const Blog = () => {
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const allBlogData = useSelector(selectBlogs);
-  const firstname = useSelector(selectFirstName);
-  const lastname = useSelector(selectLastName);
-  const [postedByUser, setPostedByUser] = useState({});
+  console.log(allBlogData);
+  const { user } = useSelector((state) => state.auth);
+
+  const sliceContent = (content, limit) => {
+    const words = content.split(" ");
+    if (words.length > limit) {
+      return words.slice(0, limit).join(" ") + "...";
+    }
+    return content;
+  };
+
+  const getDaysAgo = (timestamp) => {
+    const currentDate = new Date();
+    const postDate = new Date(timestamp * 1000);
+    const timeDiff = currentDate.getTime() - postDate.getTime();
+    const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    return daysAgo;
+  };
 
   useEffect(() => {
     fetchBlogData();
   }, []);
 
-  const fetchBlogData = async () => {
+  const fetchBlogData = () => {
     try {
       setIsLoading(true);
       const blogsRef = collection(db, "blogs");
       const q = query(blogsRef, orderBy("createdAt", "desc"));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
+      onSnapshot(q, (snapshot) => {
         const allBlogs = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          user: user,
         }));
+        console.log(allBlogs);
         setIsLoading(false);
         dispatch(SET_BLOG(allBlogs));
-
-        // Get user information for each blog and store it in state
-        const fetchUsers = async () => {
-          const usersPromises = allBlogs.map(async (blog) => {
-            if (blog.user) {
-              const userRef = doc(db, "users", blog.user);
-              const userSnapshot = await getDoc(userRef);
-              if (userSnapshot.exists()) {
-                return { id: blog.user, ...userSnapshot.data() };
-              } else {
-                return null;
-              }
-            } else {
-              return null;
-            }
-          });
-          const usersData = await Promise.all(usersPromises);
-          const usersMap = usersData.reduce((map, user) => {
-            if (user) {
-              map[user.id] = user;
-            }
-            return map;
-          }, {});
-          setPostedByUser(usersMap);
-        };
-
-        fetchUsers();
       });
-
-      // Clean up the snapshot listener when the component unmounts
-      return () => unsubscribe();
     } catch (error) {
       setIsLoading(false);
       console.log(error.message);
     }
   };
-
   return (
     <>
       {isLoading && <Loader />}
@@ -152,34 +132,41 @@ const Blog = () => {
                       marginBottom: "1rem",
                     }}
                   >
-                    <IconButton sx={{ p: 0 }}>
-                      <Avatar
-                        sx={{ bgcolor: "#222", color: "white" }}
-                        alt={postedByUser[blog.user]?.firstName || ""}
-                        src="/static/images/avatar/2.jpg"
-                      />
-                    </IconButton>
-                    <div>
-                      {postedByUser[blog.user] && (
-                        <div>
-                          <Typography variant="h6">
-                            Posted by: {postedByUser[blog.user].firstName}{" "}
-                            {postedByUser[blog.user].lastName}
-                          </Typography>
-                          <Typography variant="body2">
-                            Email: {postedByUser[blog.user].email}
-                          </Typography>
-                        </div>
-                      )}
-                    </div>
-                    <Typography variant="body1" sx={{ color: "gray" }}>
-                      - 4 days ago
+                    <Box
+                      component={Link}
+                      to={`/user/${user.id}`}
+                      sx={{
+                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color: "#222",
+                      }}
+                    >
+                      <IconButton sx={{ p: 0 }}>
+                        <Avatar
+                          sx={{ bgcolor: "green", color: "#fff" }}
+                          alt={blog.postedBy.charAt(0).toLocaleUpperCase()}
+                          src="/static/images/avatar/2.jpg"
+                        />
+                      </IconButton>
+                      <span style={{ display: "flex", gap: "0.5rem" }}>
+                        <Typography variant="body1" sx={{ fontSize: "1.2rem" }}>
+                          {blog.postedBy}
+                        </Typography>
+                      </span>
+                    </Box>
+
+                    <Typography variant="body2" sx={{ color: "gray" }}>
+                      {`${getDaysAgo(blog.createdAt.seconds)} ${
+                        getDaysAgo(blog.createdAt.seconds) <= 1 ? "day" : "days"
+                      } ago`}
                     </Typography>
                   </div>
                   <Typography variant="h4" sx={{ marginBottom: "1rem" }}>
                     {blog.title}
                   </Typography>
-                  <BlogPost content={blog.content} />
+                  <BlogPost content={`${sliceContent(blog.content, 20)}`} />
                   <Typography sx={{ marginTop: "1rem" }}>
                     <Link
                       to={`/blog/${blog.id}`}
@@ -225,6 +212,7 @@ const Blog = () => {
                       variant="body1"
                       sx={{ color: "gray", fontSize: "0.8rem" }}
                     >{`${blog.duration} mins read`}</Typography>
+                    {/* <Typography variant="body1">{blog.content}</Typography> */}
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center" }}>

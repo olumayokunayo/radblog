@@ -6,6 +6,7 @@ const initialState = {
   lastName: null,
   email: null,
   username: null,
+  displayName: null,
   user: null,
 };
 
@@ -14,12 +15,13 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     login: (state, action) => {
-      const { email, uid, firstName } = action.payload;
-      console.log("Login Action Payload:", action.payload); // Add this line to check the action payload
+      console.log(action.payload);
+      const { email, uid, displayName } = action.payload;
       state.user = uid;
       state.email = email;
-      state.firstName = firstName;
+      state.displayName = displayName;
       state.isLoggedIn = true;
+      console.log(state.user, state.email, state.displayName, state.isLoggedIn);
     },
     logout: (state, action) => {
       state.isLoggedIn = false;
@@ -27,26 +29,23 @@ const authSlice = createSlice({
       state.lastName = null;
       state.email = null;
       state.username = null;
-      state.user = null;
     },
     signup: (state, action) => {
       console.log(action.payload);
       const { firstName, lastName, uid } = action.payload;
       state.firstName = firstName;
       state.lastName = lastName;
-      state.currentUser = uid;
+      state.user = uid;
       console.log(state.firstName, state.lastName, state.currentUser);
     },
     user_name: (state, action) => {
       state.username = action.payload;
     },
-    firstName: (state, action) => {
-      state.firstName = action.payload;
-    }
   },
 });
 
-export const { login, logout, user_name, signup, firstName } = authSlice.actions;
+export const { login, logout, user_name, signup } =
+  authSlice.actions;
 
 export const selectEmail = (state) => state.auth.email;
 export const selectFirstName = (state) => state.auth.firstName;
@@ -54,5 +53,6 @@ export const selectLastName = (state) => state.auth.lastName;
 export const selectIsLoggedIn = (state) => state.auth.isLoggedIn;
 export const selectUsername = (state) => state.auth.username;
 export const selectUser = (state) => state.auth.user;
+export const selectDisplayName = (state) => state.auth.displayName;
 
 export default authSlice.reducer;

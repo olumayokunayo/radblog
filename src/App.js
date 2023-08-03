@@ -8,6 +8,9 @@ import Blog from "./components/blog/Blog";
 import WriteBlog from "./components/writeBlog/WriteBlog";
 import ActionBlog from "./components/writeBlog/ActionBlog";
 import BlogDetails from "./components/blog/BlogDetails";
+import Users from "./components/users/Users";
+import Reset from "./components/auth/Reset";
+import Profile from "./components/profile/Profile";
 
 function App() {
   return (
@@ -22,6 +25,9 @@ function App() {
           <Route path="/write-blog" element={<WriteBlog />} />
           <Route path="/write-action" element={<ActionBlog />} />
           <Route path="/blog/:id" element={<BlogDetails />} />
+          <Route path="/user/:id" element={<Users />} />
+          <Route path="/reset-password" element={<Reset />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </>

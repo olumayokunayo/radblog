@@ -161,8 +161,10 @@ const Login = () => {
                   ),
                 }}
               />
-              <Typography variant="body2" sx={{ textAlign: "right" }}>
+              <Typography variant="body2" sx={{ textAlign: "right"}}>
+              <Link to='/reset-password' style={{textDecoration: 'none', color: '#222'}}>
                 Forgot Password?
+              </Link>
               </Typography>
               <Button
                 type="submit"

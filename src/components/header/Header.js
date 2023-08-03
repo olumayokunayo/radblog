@@ -1,4 +1,4 @@
-import { React, useCallback } from "react";
+import { React } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   login,
   logout,
-  selectFirstName,
+  selectDisplayName,
   selectIsLoggedIn,
   user_name,
 } from "../../redux/slice/authSlice";
@@ -28,17 +28,33 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
 import { SHOW_WRITE_POST, selectIsShown } from "../../redux/slice/showSlice";
-// import { getUser } from "../auth/Functions";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const Header = () => {
   const isShown = useSelector(selectIsShown);
+  const userdisplayName = useSelector(selectDisplayName);
+  console.log(userdisplayName);
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const dispatch = useDispatch();
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [display, setDisplay] = useState("");
+  const [showHeader, setShowHeader] = useState(true);
 
+  const fixedNavbar = () => {
+    if (window.scrollY > 50) {
+      setShowHeader(false);
+    } else {
+      setShowHeader(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", fixedNavbar);
+
+    return () => window.removeEventListener("scroll", fixedNavbar);
+  }, []);
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -51,7 +67,6 @@ const Header = () => {
     setIsLoading(true);
     signOut(auth)
       .then(() => {
-        console.log("logout successful");
         setIsLoading(false);
         navigate("/login");
       })
@@ -67,15 +82,11 @@ const Header = () => {
   };
 
   useEffect(() => {
-    // getUser(dispatch())
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        console.log(user);
-        const {uid, displayName, email} = user
-        console.log(uid, displayName, email);
+        const { uid, displayName, email } = user;
         const displayUsername = user.displayName.charAt(0).toLocaleUpperCase();
         setDisplay(displayUsername);
-        console.log(displayUsername);
 
         dispatch(login(user));
         dispatch(
@@ -89,197 +100,228 @@ const Header = () => {
     });
     return () => unsubscribe();
   }, [dispatch]);
-  
-  console.log(display);
 
   return (
     <>
       {isLoading && <Loader />}
-      <Container maxWidth="lg">
-        <Box sx={{ flexGrow: 1 }}>
-          <AppBar
-            position="static"
-            sx={{ backgroundColor: "#ffffff", boxShadow: "none" }}
-          >
-            <Toolbar>
-              <Logo />
-              {isLoggedIn ? (
-                <>
-                  <Button
-                    onClick={handleWritePost}
-                    component={Link}
-                    to="/write-blog"
-                    sx={{
-                      bgcolor: "green",
-                      padding: "1rem",
-                      borderRadius: "30px",
-                      color: "#fff",
-                      display: "flex",
-                      gap: "0.3rem",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      "&:hover": {
-                        bgcolor: "darkgreen",
-                      },
-                    }}
-                  >
-                    <Typography
+      {showHeader && (
+        <Container maxWidth="lg">
+          <Box sx={{ flexGrow: 1 }}>
+            <AppBar
+              position="sticky"
+              sx={{
+                backgroundColor: "#ffffff",
+                boxShadow: "none",
+                padding: "0.5rem",
+                top: 0,
+              }}
+            >
+              <Toolbar>
+                <Logo />
+                {isLoggedIn ? (
+                  <>
+                    <Button
+                      onClick={handleWritePost}
+                      component={Link}
+                      to="/write-blog"
                       sx={{
-                        textTransform: "none",
-                        textDecoration: "none",
+                        bgcolor: "green",
+                        padding: "1rem",
+                        borderRadius: "30px",
                         color: "#fff",
+                        display: "flex",
+                        gap: "0.3rem",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        "&:hover": {
+                          bgcolor: "darkgreen",
+                        },
                       }}
                     >
-                      Write a Post
-                    </Typography>
-                    <CreateIcon />
-                  </Button>
-
-                  <Button
-                    sx={{
-                      "&:hover": {
-                        bgcolor: "none",
-                      },
-                    }}
-                  >
-                    <Box
+                      <Typography
+                        sx={{
+                          textTransform: "none",
+                          textDecoration: "none",
+                          color: "#fff",
+                        }}
+                      >
+                        Write a Post
+                      </Typography>
+                      <CreateIcon />
+                    </Button>
+                    <Button
                       sx={{
-                        flexGrow: 0,
                         "&:hover": {
                           bgcolor: "none",
                         },
                       }}
                     >
-                      <Tooltip>
-                        <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                          <Avatar
-                            sx={{ bgcolor: "#222" }}
-                            alt={display}
-                            src="/static/images/avatar/2.jpg"
-                          />
-                        </IconButton>
-                      </Tooltip>
-                      <Menu
+                      <Box
                         sx={{
-                          mt: "45px",
-                          marginTop: "4rem",
-                          "& .css-olj38-MuiButtonBase-root-MuiMenuItem-root:hover":
-                            {
-                              backgroundColor: "transparent",
-                            },
+                          flexGrow: 0,
+                          "&:hover": {
+                            bgcolor: "none",
+                          },
                         }}
-                        id="menu-appbar"
-                        anchorEl={anchorElUser}
-                        anchorOrigin={{
-                          vertical: "top",
-                          horizontal: "right",
-                        }}
-                        keepMounted
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "right",
-                        }}
-                        open={Boolean(anchorElUser)}
-                        onClose={handleCloseUserMenu}
                       >
-                        <MenuItem
+                        {/* <Tooltip> */}
+                        <IconButton
+                          onClick={handleOpenUserMenu}
                           sx={{
+                            p: 0,
+                            borderRadius: "15px",
+                            bgcolor: "#222",
+                            color: "#fff",
                             "&:hover": {
-                              bgcolor: "none",
+                              bgcolor: "#333333",
+                              borderRadius: "none",
+                              color: "#fff",
                             },
                           }}
                         >
-                          <Box
+                          <Typography
                             sx={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "start",
+                              fontSize: "1rem",
+                              padding: "0.4rem 0.5rem",
+                              borderRadius: "20px",
                             }}
                           >
-                            <Button
+                            {userdisplayName}
+                          </Typography>
+                          <ExpandMoreIcon style={{ color: "#fff" }} />
+                          {/* <Avatar
+                            sx={{ bgcolor: "green" }}
+                            alt={display}
+                            src="/static/images/avatar/2.jpg"
+                          /> */}
+                        </IconButton>
+                        {/* </Tooltip> */}
+                        <Menu
+                          sx={{
+                            mt: "45px",
+                            marginTop: "4rem",
+                            "& .css-olj38-MuiButtonBase-root-MuiMenuItem-root:hover":
+                              {
+                                backgroundColor: "transparent",
+                              },
+                          }}
+                          id="menu-appbar"
+                          anchorEl={anchorElUser}
+                          anchorOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                          }}
+                          keepMounted
+                          transformOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                          }}
+                          open={Boolean(anchorElUser)}
+                          onClose={handleCloseUserMenu}
+                        >
+                          <MenuItem
+                            sx={{
+                              "&:hover": {
+                                bgcolor: "none",
+                              },
+                            }}
+                          >
+                            <Box
                               sx={{
-                                textTransform: "none",
-                                color: "#333333",
                                 display: "flex",
-                                gap: "0.5rem",
+                                flexDirection: "column",
+                                alignItems: "start",
                               }}
                             >
-                              <PersonOutlineIcon />
-                              <Typography>Profile</Typography>
-                            </Button>
-                            <Button
-                              sx={{
-                                textTransform: "none",
-                                color: "#333333",
-                                display: "flex",
-                                gap: "0.5rem",
-                              }}
-                            >
-                              <InterestsIcon />
-                              <Typography>Manage Interests</Typography>
-                            </Button>
-                            <hr style={{ width: "100%" }} />
-                            <Button
-                              onClick={logoutHandler}
-                              sx={{
-                                width: "100%",
-                                textTransform: "none",
-                                display: "flex",
-                                gap: "0.5rem",
-                                color: "#222",
-                                padding: "0.5rem 2rem",
-                                marginTop: "1rem",
-                                backgroundImage:
-                                  "linear-gradient(to top, green, #fff)",
-                              }}
-                            >
-                              <Typography variant="body2">Sign Out</Typography>
-                              <AiOutlineLogout size={20} />
-                            </Button>
-                          </Box>
-                        </MenuItem>
-                      </Menu>
-                    </Box>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    component={Link}
-                    to="/login"
-                    sx={{
-                      color: "green",
-                      fontWeight: 600,
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "#fff",
-                      },
-                    }}
-                  >
-                    Sign in
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/register"
-                    sx={{
-                      color: "#fff",
-                      fontWeight: 600,
-                      backgroundColor: "green",
-                      textTransform: "none",
-                      borderRadius: "30px",
-                      "&:hover": {
-                        backgroundColor: "darkgreen",
-                      },
-                    }}
-                  >
-                    Sign up
-                  </Button>
-                </>
-              )}
-            </Toolbar>
-          </AppBar>
-        </Box>
-      </Container>
+                              <Button
+                                sx={{
+                                  textTransform: "none",
+                                  color: "#333333",
+                                  display: "flex",
+                                  gap: "0.5rem",
+                                }}
+                              >
+                                <PersonOutlineIcon />
+                                <Typography>
+                                  <Link to='/profile' style={{textDecoration: 'none', color: '#222'}}>Profile</Link>
+                                </Typography>
+                              </Button>
+                              <Button
+                                sx={{
+                                  textTransform: "none",
+                                  color: "#333333",
+                                  display: "flex",
+                                  gap: "0.5rem",
+                                }}
+                              >
+                                <InterestsIcon />
+                                <Typography>Manage Interests</Typography>
+                              </Button>
+                              <hr style={{ width: "100%" }} />
+                              <Button
+                                onClick={logoutHandler}
+                                sx={{
+                                  width: "100%",
+                                  textTransform: "none",
+                                  display: "flex",
+                                  gap: "0.5rem",
+                                  color: "#222",
+                                  padding: "0.5rem 2rem",
+                                  marginTop: "1rem",
+                                  backgroundImage:
+                                    "linear-gradient(to top, green, #fff)",
+                                }}
+                              >
+                                <Typography variant="body2">
+                                  Sign Out
+                                </Typography>
+                                <AiOutlineLogout size={20} />
+                              </Button>
+                            </Box>
+                          </MenuItem>
+                        </Menu>
+                      </Box>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      component={Link}
+                      to="/login"
+                      sx={{
+                        color: "green",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        "&:hover": {
+                          backgroundColor: "#fff",
+                        },
+                      }}
+                    >
+                      Sign in
+                    </Button>
+                    <Button
+                      component={Link}
+                      to="/register"
+                      sx={{
+                        color: "#fff",
+                        fontWeight: 600,
+                        backgroundColor: "green",
+                        textTransform: "none",
+                        borderRadius: "30px",
+                        "&:hover": {
+                          backgroundColor: "darkgreen",
+                        },
+                      }}
+                    >
+                      Sign up
+                    </Button>
+                  </>
+                )}
+              </Toolbar>
+            </AppBar>
+          </Box>
+        </Container>
+      )}
     </>
   );
 };

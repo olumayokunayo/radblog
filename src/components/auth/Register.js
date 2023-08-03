@@ -9,9 +9,9 @@ import { AiOutlineEye } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 import Loader from "../loader/Loader";
-import { login, signup } from "../../redux/slice/authSlice";
+import { signup } from "../../redux/slice/authSlice";
 import { useDispatch } from "react-redux";
 
 const Register = () => {
@@ -27,9 +27,18 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  const capitalizeFirstLetter = (str) => {
+    return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setData({ ...data, [name]: value });
+
+    if (name === "firstName" || name === "lastName") {
+      setData({ ...data, [name]: capitalizeFirstLetter(value) });
+    } else {
+      setData({ ...data, [name]: value });
+    }
+    console.log(data);
   };
 
   const formHandler = (e) => {
@@ -52,13 +61,17 @@ const Register = () => {
             firstName: firstName,
             lastName: lastName,
             email: email,
+            uid: user.uid,
           })
         );
 
+        const signUpTime = Timestamp.now().toDate();
         const userRef = addDoc(collection(db, "users"), {
           firstName: firstName,
           lastName: lastName,
           email: email,
+          uid: user.uid,
+          time: signUpTime,
         });
         setIsLoading(false);
         navigate("/login");
