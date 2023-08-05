@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useEffect } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import backgroundImg from "../../images/rad.jpg";

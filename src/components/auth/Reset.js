@@ -4,16 +4,13 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import { Button,  TextField, Typography } from "@mui/material";
 import Logo from "../logo/Logo";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { auth } from "../../firebase/config";
 import Loader from "../loader/Loader";
-import { useDispatch } from "react-redux";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { ToastContainer, toast } from "react-toastify";
 
 const Reset = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({
     email: "",

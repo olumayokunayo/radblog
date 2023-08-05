@@ -35,8 +35,6 @@ const ActionBlog = () => {
   const displayName = useSelector(selectDisplayName);
 
   const user = useSelector(selectUser);
-  const [currentUserData, setCurrentUserData] = useState(null);
-  console.log(displayName);
 
   const allItems = [
     { id: 1, name: "Programming" },
@@ -75,7 +73,6 @@ const ActionBlog = () => {
           ...doc.data(),
           user: user,
         }));
-        // setdate(allUsers)
         setIsLoading(false);
       });
     } catch (error) {

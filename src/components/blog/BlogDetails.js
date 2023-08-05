@@ -38,7 +38,6 @@ const BlogDetail = ({ content }) => {
 const BlogDetails = () => {
   const name = useSelector(selectDisplayName);
   const [isLoading, setIsLoading] = useState(false)
-  const [display, setDisplay] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
   const allBlogsData = useSelector(selectBlogs);

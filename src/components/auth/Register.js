@@ -11,12 +11,17 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "../../firebase/config";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import Loader from "../loader/Loader";
-import { signup } from "../../redux/slice/authSlice";
-import { useDispatch } from "react-redux";
+import {
+  selectInterests,
+  selectedInterests,
+  signup,
+} from "../../redux/slice/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const interests = useSelector(selectInterests);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [data, setData] = useState({
@@ -38,49 +43,64 @@ const Register = () => {
     } else {
       setData({ ...data, [name]: value });
     }
-    console.log(data);
   };
 
-  const formHandler = (e) => {
+  const formHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(data);
+
     const { email, password, firstName, lastName } = data;
-    console.log(email, password, firstName, lastName);
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        const displayName = `${firstName} ${lastName}`;
 
-        updateProfile(user, { displayName });
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-        // Dispatch the login action to update the Redux store with the user information
-        dispatch(
-          signup({
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            uid: user.uid,
-          })
-        );
+      const user = userCredential.user;
+      const displayName = `${firstName} ${lastName}`;
 
-        const signUpTime = Timestamp.now().toDate();
-        const userRef = addDoc(collection(db, "users"), {
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
+      await updateProfile(user, { displayName });
+
+      console.log(user);
+
+      dispatch(
+        signup({
+          firstName,
+          lastName,
+          email,
           uid: user.uid,
-          time: signUpTime,
-        });
-        setIsLoading(false);
-        navigate("/login");
-      })
-      .catch((error) => {
-        setIsLoading(false);
-        console.log(error.message);
-      });
+          // interests: [],
+        })
+      );
+      dispatch(
+        selectedInterests({
+          email,
+          password,
+          firstName,
+          lastName,
+          uid: user.uid,
+        })
+      );
+
+      // const signUpTime = Timestamp.now().toDate();
+      // await addDoc(collection(db, "users"), {
+      //   firstName,
+      //   lastName,
+      //   email,
+      //   uid: user.uid,
+      //   time: signUpTime,
+      // });
+
+      setIsLoading(false);
+      navigate(`/manage-interests`);
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error during registration:", error);
+    }
   };
+
   const handleTogglePassword = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };

@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
-import { Avatar, Box, IconButton, Tooltip, Typography } from "@mui/material";
+import { Avatar, Box, IconButton, Typography } from "@mui/material";
 import Search from "../search/Search";
 import Interests from "../interests/Interests";
 import { SET_BLOG, selectBlogs } from "../../redux/slice/postSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase/config";
-import { selectDisplayName } from "../../redux/slice/authSlice";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Loader from "../loader/Loader";
 import DOMPurify from "dompurify";
@@ -212,7 +211,6 @@ const Blog = () => {
                       variant="body1"
                       sx={{ color: "gray", fontSize: "0.8rem" }}
                     >{`${blog.duration} mins read`}</Typography>
-                    {/* <Typography variant="body1">{blog.content}</Typography> */}
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center" }}>

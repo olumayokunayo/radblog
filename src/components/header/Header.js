@@ -18,8 +18,6 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../firebase/config";
 import CreateIcon from "@mui/icons-material/Create";
-import Avatar from "@mui/material/Avatar";
-import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -55,6 +53,8 @@ const Header = () => {
 
     return () => window.removeEventListener("scroll", fixedNavbar);
   }, []);
+
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -243,7 +243,15 @@ const Header = () => {
                               >
                                 <PersonOutlineIcon />
                                 <Typography>
-                                  <Link to='/profile' style={{textDecoration: 'none', color: '#222'}}>Profile</Link>
+                                  <Link
+                                    to="/profile"
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "#222",
+                                    }}
+                                  >
+                                    Profile
+                                  </Link>
                                 </Typography>
                               </Button>
                               <Button
@@ -254,8 +262,12 @@ const Header = () => {
                                   gap: "0.5rem",
                                 }}
                               >
-                                <InterestsIcon />
-                                <Typography>Manage Interests</Typography>
+                                {/* <InterestsIcon /> */}
+                                {/* <Typography>
+                                  <Link to="/manage-interests">
+                                    Manage Interests
+                                  </Link>
+                                </Typography> */}
                               </Button>
                               <hr style={{ width: "100%" }} />
                               <Button

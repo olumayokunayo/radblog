@@ -7,7 +7,6 @@ const Users = () => {
   const { id } = useParams();
   console.log(id);
   const [isLoading, setIsLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     fetchUserData(id);
@@ -22,11 +21,9 @@ const Users = () => {
         const allUsers = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        //   user: doc.data().postedBy,
         }));
         console.log(allUsers);
         setIsLoading(false);
-        //   dispatch(SET_BLOG(allBlogs));
       });
     } catch (error) {
       setIsLoading(false);

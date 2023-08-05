@@ -11,6 +11,8 @@ import BlogDetails from "./components/blog/BlogDetails";
 import Users from "./components/users/Users";
 import Reset from "./components/auth/Reset";
 import Profile from "./components/profile/Profile";
+import ManageInterests from "./components/profile/ManageInterests";
+import MyPosts from "./components/blog/MyPosts";
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
           <Route path="/user/:id" element={<Users />} />
           <Route path="/reset-password" element={<Reset />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/manage-interests" element={<ManageInterests />} />
+          <Route path="/profile/my-posts" element={<MyPosts />} />
         </Routes>
       </BrowserRouter>
     </>
