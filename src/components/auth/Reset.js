@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import { Button,  TextField, Typography } from "@mui/material";
+import { Button, TextField, Typography } from "@mui/material";
 import Logo from "../logo/Logo";
 import { Link } from "react-router-dom";
 import { auth } from "../../firebase/config";
@@ -35,11 +35,10 @@ const Reset = () => {
         toast.success(
           "Password reset email sent has been sent to your email address"
         );
-    //  navigate('/login')
       })
       .catch((error) => {
         setIsLoading(false);
-        toast.error("Enter a valid email address");
+        toast.error(error.message);
       });
   };
 
@@ -112,7 +111,9 @@ const Reset = () => {
                 Reset password
               </Button>
             </div>
-            <Button component={Link} to='/login'>login</Button>
+            <Button component={Link} to="/login">
+              login
+            </Button>
           </Box>
         </Box>
       </Container>

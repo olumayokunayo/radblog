@@ -14,9 +14,10 @@ import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import Loader from "../loader/Loader";
 import { useDispatch } from "react-redux";
 import { login } from "../../redux/slice/authSlice";
+import { ToastContainer, toast } from "react-toastify";
 
 const Login = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,13 +32,13 @@ const Login = () => {
     setIsLoading(true);
     signInWithPopup(auth, provider)
       .then((result) => {
-        console.log("login successful");
+        toast.success("Login successful");
         setIsLoading(false);
         navigate("/");
       })
       .catch((error) => {
         setIsLoading(false);
-        console.log(error.message);
+        toast.error(error.message);
       });
   };
 
@@ -61,21 +62,22 @@ const Login = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         const user = userCredential.user;
-         // Dispatch the login action to update the Redux store with the user information
-         setIsLoading(false);
-         dispatch(
-          login(user)
-        );
+        const { email, uid, displayName } = user;
+        console.log(user);
+        setIsLoading(false);
+        toast.success("Login successful");
+        dispatch(login({ email, uid, displayName }));
         navigate("/");
       })
       .catch((error) => {
         setIsLoading(false);
-        console.log(error.message);
+        toast.error(error.message);
       });
   };
 
   return (
     <>
+      {<ToastContainer />}
       {isLoading && <Loader />}
       <Container
         maxWidth="xs"
@@ -161,10 +163,13 @@ const Login = () => {
                   ),
                 }}
               />
-              <Typography variant="body2" sx={{ textAlign: "right"}}>
-              <Link to='/reset-password' style={{textDecoration: 'none', color: '#222'}}>
-                Forgot Password?
-              </Link>
+              <Typography variant="body2" sx={{ textAlign: "right" }}>
+                <Link
+                  to="/reset-password"
+                  style={{ textDecoration: "none", color: "#222" }}
+                >
+                  Forgot Password?
+                </Link>
               </Typography>
               <Button
                 type="submit"

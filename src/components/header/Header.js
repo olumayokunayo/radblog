@@ -3,7 +3,7 @@ import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
-import { Container, MenuItem, Typography } from "@mui/material";
+import { Avatar, Container, MenuItem, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import Logo from "../logo/Logo";
 import { useEffect, useState } from "react";
@@ -21,12 +21,10 @@ import CreateIcon from "@mui/icons-material/Create";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
-import InterestsIcon from "@mui/icons-material/Interests";
 import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
 import { SHOW_WRITE_POST, selectIsShown } from "../../redux/slice/showSlice";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const Header = () => {
   const isShown = useSelector(selectIsShown);
@@ -39,6 +37,7 @@ const Header = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [display, setDisplay] = useState("");
   const [showHeader, setShowHeader] = useState(true);
+  const [isWritingBlog, setIsWritingBlog] = useState(false);
 
   const fixedNavbar = () => {
     if (window.scrollY > 50) {
@@ -53,7 +52,6 @@ const Header = () => {
 
     return () => window.removeEventListener("scroll", fixedNavbar);
   }, []);
-
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -77,6 +75,7 @@ const Header = () => {
       });
   };
   const handleWritePost = () => {
+    setIsWritingBlog(true);
     dispatch(SHOW_WRITE_POST(false));
     navigate("/write-blog");
   };
@@ -84,8 +83,8 @@ const Header = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const { uid, displayName, email } = user;
-        const displayUsername = user.displayName.charAt(0).toLocaleUpperCase();
+        const { displayName } = user;
+        const displayUsername = displayName.charAt(0).toLocaleUpperCase();
         setDisplay(displayUsername);
 
         dispatch(login(user));
@@ -108,12 +107,12 @@ const Header = () => {
         <Container maxWidth="lg">
           <Box sx={{ flexGrow: 1 }}>
             <AppBar
-              position="sticky"
+              position="fixed"
               sx={{
                 backgroundColor: "#ffffff",
                 boxShadow: "none",
-                padding: "0.5rem",
-                top: 0,
+                padding: "0.5rem 8rem",
+                
               }}
             >
               <Toolbar>
@@ -149,11 +148,12 @@ const Header = () => {
                       </Typography>
                       <CreateIcon />
                     </Button>
-                    <Button
-                      sx={{
+                    <div
+                      style={{
                         "&:hover": {
                           bgcolor: "none",
                         },
+                        padding: "1rem",
                       }}
                     >
                       <Box
@@ -164,38 +164,20 @@ const Header = () => {
                           },
                         }}
                       >
-                        {/* <Tooltip> */}
                         <IconButton
                           onClick={handleOpenUserMenu}
                           sx={{
                             p: 0,
                             borderRadius: "15px",
-                            bgcolor: "#222",
                             color: "#fff",
-                            "&:hover": {
-                              bgcolor: "#333333",
-                              borderRadius: "none",
-                              color: "#fff",
-                            },
                           }}
                         >
-                          <Typography
-                            sx={{
-                              fontSize: "1rem",
-                              padding: "0.4rem 0.5rem",
-                              borderRadius: "20px",
-                            }}
-                          >
-                            {userdisplayName}
-                          </Typography>
-                          <ExpandMoreIcon style={{ color: "#fff" }} />
-                          {/* <Avatar
-                            sx={{ bgcolor: "green" }}
+                          <Avatar
+                            sx={{ bgcolor: "#222" }}
                             alt={display}
                             src="/static/images/avatar/2.jpg"
-                          /> */}
+                          />
                         </IconButton>
-                        {/* </Tooltip> */}
                         <Menu
                           sx={{
                             mt: "45px",
@@ -254,21 +236,6 @@ const Header = () => {
                                   </Link>
                                 </Typography>
                               </Button>
-                              <Button
-                                sx={{
-                                  textTransform: "none",
-                                  color: "#333333",
-                                  display: "flex",
-                                  gap: "0.5rem",
-                                }}
-                              >
-                                {/* <InterestsIcon /> */}
-                                {/* <Typography>
-                                  <Link to="/manage-interests">
-                                    Manage Interests
-                                  </Link>
-                                </Typography> */}
-                              </Button>
                               <hr style={{ width: "100%" }} />
                               <Button
                                 onClick={logoutHandler}
@@ -277,11 +244,12 @@ const Header = () => {
                                   textTransform: "none",
                                   display: "flex",
                                   gap: "0.5rem",
-                                  color: "#222",
-                                  padding: "0.5rem 2rem",
+                                  color: "#fff",
                                   marginTop: "1rem",
-                                  backgroundImage:
-                                    "linear-gradient(to top, green, #fff)",
+                                  bgcolor: "#000000ed",
+                                  "&:hover": {
+                                    bgcolor: "#222",
+                                  },
                                 }}
                               >
                                 <Typography variant="body2">
@@ -293,7 +261,7 @@ const Header = () => {
                           </MenuItem>
                         </Menu>
                       </Box>
-                    </Button>
+                    </div>
                   </>
                 ) : (
                   <>

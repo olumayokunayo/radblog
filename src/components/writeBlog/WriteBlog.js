@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { SAVE_BLOG_DATA } from "../../redux/slice/blogSlice";
+import Loader from "../loader/Loader";
 
 const WriteBlog = () => {
   const dispatch = useDispatch();
@@ -16,7 +17,7 @@ const WriteBlog = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageURL, setImageURL] = useState("");
   const [content, setContent] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
   // Validate fields
   const validateFields = () => {
     let isValid = true;
@@ -58,88 +59,131 @@ const WriteBlog = () => {
 
   // next handler
   const nextHandler = () => {
+    setIsLoading(true);
     const isValid = validateFields();
 
     if (isValid) {
       const blogData = {
         title,
-        // postedBy: 
+        // postedBy:
         image: selectedImage,
         content,
       };
+      setIsLoading(false);
       dispatch(SAVE_BLOG_DATA(blogData));
       navigate("/write-action");
+    } else {
+      setIsLoading(false);
     }
   };
-  return (
-    <Container maxWidth="md" sx={{ paddingTop: "5rem" }}>
-      <Box sx={{ bgcolor: "#fff", height: "50vh" }}>
-        <ToastContainer />
-        <Container maxWidth="lg" sx={{ display: "flex", gap: "1rem" }}>
-          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "darkgreen" }} />
-          <input
-            type="text"
-            placeholder="Title"
-            cols={100}
-            style={{
-              border: "none",
-              outline: "none",
-              fontSize: "1rem",
-              color: "black",
-              "&::placeholder": {
-                color: "red",
-              },
-            }}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </Container>
-        <Container
-          maxWidth="lg"
-          sx={{ display: "flex", gap: "1rem", paddingTop: "2rem" }}
-        >
-          <AddCircleOutlineIcon sx={{ fontSize: "2rem", color: "darkgreen " }} />
-          <input
-            width="100%"
-            type="file"
-            accept="image/*"
-            id="fileInput"
-            placeholder="Add Image"
-            cols={100}
-            rows={3}
-            style={{
-              cursor: "pointer",
-            }}
-            onChange={handleImageChange}
-          />
-          
-        </Container>
-        {imageURL && (
-          <div>
-            <img src={imageURL} alt="Selected" style={{ maxWidth: "200px" }} />
-          </div>
-        )}
-        <RichTextEditor value={content} onChange={handleRichTextChange} />
 
-        <Container maxWidth="md" sx={{ paddingTop: "4rem" }}>
-          <Button
-            onClick={nextHandler}
+  const cancelHandler = () => {
+    navigate("/");
+  };
+  return (
+    <>
+      {isLoading && <Loader />}
+      <Container maxWidth="md" sx={{ paddingTop: "5rem" }}>
+        <Box sx={{ bgcolor: "#fff", height: "50vh" }}>
+          <ToastContainer />
+          <Container maxWidth="lg" sx={{ display: "flex", gap: "1rem" }}>
+            <AddCircleOutlineIcon
+              sx={{ fontSize: "2rem", color: "darkgreen" }}
+            />
+            <input
+              type="text"
+              placeholder="Title"
+              cols={100}
+              style={{
+                border: "none",
+                outline: "none",
+                fontSize: "1rem",
+                color: "black",
+                "&::placeholder": {
+                  color: "red",
+                },
+              }}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </Container>
+          <Container
+            maxWidth="lg"
+            sx={{ display: "flex", gap: "1rem", paddingTop: "2rem" }}
+          >
+            <AddCircleOutlineIcon
+              sx={{ fontSize: "2rem", color: "darkgreen " }}
+            />
+            <input
+              width="100%"
+              type="file"
+              accept="image/*"
+              id="fileInput"
+              placeholder="Add Image"
+              cols={100}
+              rows={3}
+              style={{
+                cursor: "pointer",
+              }}
+              onChange={handleImageChange}
+            />
+          </Container>
+          {imageURL && (
+            <div>
+              <img
+                src={imageURL}
+                alt="Selected"
+                style={{ maxWidth: "200px" }}
+              />
+            </div>
+          )}
+          <RichTextEditor value={content} onChange={handleRichTextChange} />
+
+          <Container
+            maxWidth="md"
             sx={{
-              marginTop: "2rem",
-              marginLeft: "40rem",
-              padding: "0.5rem 3rem",
-              bgcolor: "green",
-              borderRadius: "25px",
-              color: "#fff",
-              "&:hover": {
-                bgcolor: "darkgreen",
-              },
+              paddingTop: "4rem",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            Next
-          </Button>
-        </Container>
-      </Box>
-    </Container>
+            <Button
+              variant="secondary"
+              onClick={cancelHandler}
+              sx={{
+                marginTop: "2rem",
+                // marginLeft: "40rem",
+                padding: "0.5rem 3rem",
+                bgcolor: "orangered",
+                borderRadius: "25px",
+                color: "#fff",
+                "&:hover": {
+                  bgcolor: "darkred",
+                },
+              }}
+            >
+              CANCEL
+            </Button>
+            <Button
+              onClick={nextHandler}
+              sx={{
+                marginTop: "2rem",
+                // marginLeft: "40rem",
+                padding: "0.5rem 3rem",
+                bgcolor: "green",
+                borderRadius: "25px",
+                color: "#fff",
+                "&:hover": {
+                  bgcolor: "darkgreen",
+                },
+              }}
+            >
+              Next
+            </Button>
+          </Container>
+        </Box>
+      </Container>
+    </>
   );
 };
 

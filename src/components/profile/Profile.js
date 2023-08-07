@@ -4,14 +4,12 @@ import { useSelector } from "react-redux";
 import {
   selectDisplayName,
   selectEmail,
-  selectUser,
+  selectUserId,
 } from "../../redux/slice/authSlice";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import TodayIcon from "@mui/icons-material/Today";
 import EditIcon from "@mui/icons-material/Edit";
 import "./Profile.css";
-import MyPosts from "../blog/MyPosts";
-import SavedPosts from "../blog/SavedPosts";
 import {
   collection,
   doc,
@@ -22,11 +20,14 @@ import {
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import Loader from "../loader/Loader";
+import { IoArrowBackCircleOutline } from "react-icons/io5";
+
 const Profile = () => {
+  const navigate = useNavigate();
   const email = useSelector(selectEmail);
   const isActiveLink = ({ isActive }) => (isActive ? "active" : "");
   const userdisplayName = useSelector(selectDisplayName);
-  const id = useSelector(selectUser);
+  const id = useSelector(selectUserId);
   console.log(id);
   const [isLoading, setIsLoading] = useState(" ");
   const [data, setData] = useState(null);
@@ -58,7 +59,6 @@ const Profile = () => {
         console.log("userData:", userData);
         setUsers(userData);
         console.log(users);
-
 
         const userDat = allUsers.find((user) => user.id === id);
         console.log(userDat);
@@ -123,49 +123,53 @@ const Profile = () => {
 
   const saveHandler = async () => {
     try {
-      
-      const usersRef = doc(db, "users", id);
-            const docSnap = await getDoc(usersRef);
-
-     if(docSnap.exists()){
-      console.log(true);
-     } else {
-      console.log(false);
-     }
-      // const docSnap = await getDoc(usersRef);
-      // console.log(docSnap);
-
-      // if (docSnap.exists()) {
-      //   // Document exists, proceed with updating
-      //   await updateDoc(usersRef, { bio: bio.text });
-      //   setDisplayBio(bio.text);
-      //   setIsBioEditing(false);
-      // } else {
-      //   console.error("Document not found.");
-      // }
+      console.log('starting..');
+      const usersRef = doc(db, "users", idg);
+      updateDoc(usersRef, {
+        about: bio,
+      });
     } catch (error) {
-      console.error("Error updating bio:", error);
+      console.log(error.message);
     }
   };
 
+  const backHandler = () => {
+    navigate("/blog");
+  };
   return (
     <>
       {isLoading && <Loader />}
-      <Container maxWidth="sm" sx={{ height: "100vh" }}>
+      <Container
+        maxWidth="sm"
+        sx={{
+          height: "fit-content",
+          boxShadow: "2px 2px 8px 4px rgba(0,0,0,0.05)",
+          paddingTop: "8rem",
+          // padding: "1rem",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: "1rem",
+            gap: "8rem",
             marginBottom: "2rem",
           }}
         >
+          <Button
+            sx={{ display: "flex", gap: "0.5rem", color: "#222" }}
+            onClick={backHandler}
+          >
+            <IoArrowBackCircleOutline />
+            <Typography sx={{ textTransform: "none" }}>Back</Typography>
+          </Button>
           <Typography
             variant="h5"
             sx={{
               borderBottom: "1px solid #e4e7eb",
               width: "fit-content",
               fontWeight: 600,
+              textAlign: "center",
             }}
           >
             My Profile
@@ -177,200 +181,209 @@ const Profile = () => {
             </Link>
           </Typography>
         </Box>
-        <Box>
+        <Box
+          sx={{
+            boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            height: "fit-content",
+          }}
+        >
           <Typography
             sx={{
               fontSize: "1.4rem",
-              // padding: "0.4rem 0.8rem",
               borderRadius: "10px",
-              // bgcolor: "#222",
               width: "fit-content",
               color: "#222",
             }}
           >
             {userdisplayName}
           </Typography>
-        </Box>
-        <Typography variant="body1" sx={{ marginTop: "1rem" }}>
-          Email Address: <span style={{ color: "gray" }}>{email}</span>
-        </Typography>
-        <div style={{ display: "flex", marginTop: "2rem" }}>
-          <TodayIcon style={{ color: "orangered" }} />
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+
+          <Typography variant="body1" sx={{ marginTop: "1rem" }}>
+            Email Address: <span style={{ color: "gray" }}>{email}</span>
+          </Typography>
+          <div style={{ display: "flex", marginTop: "2rem" }}>
+            <TodayIcon style={{ color: "orangered" }} />
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <Typography>Date Joined:</Typography>
-              {users && users.time ? (
-                <span>{formatDate(users.time)}</span>
-              ) : (
-                <span>No data available</span>
-              )}
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            marginTop: "2rem",
-            paddingBottom: "1rem",
-            borderBottom: "1px solid #e4e7eb",
-          }}
-        ></div>
-
-        <div
-          style={{
-            paddingTop: "2rem",
-            paddingBottom: "2rem",
-            borderBottom: "1px solid #e4e7eb",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, marginBottom: "1rem" }}
-            >
-              About
-            </Typography>
-            {isBioEditing ? (
-              <>
-                <Button
-                  onClick={() => setIsBioEditing(false)}
-                  variant="outlined"
-                  color="secondary"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={saveHandler}
-                >
-                  Save
-                </Button>
-              </>
-            ) : (
-              <EditIcon
-                style={{ fontSize: "1rem", cursor: "pointer" }}
-                onClick={bioHandler}
-              />
-            )}
-          </div>
-          <div></div>
-
-          {isBioEditing ? (
-            <textarea
-              disabled={!isBioEditing}
-              name="text"
-              value={bio.text}
-              onChange={(e) => handleInputChange(e)}
-              cols={60}
-              rows="fit-content"
-              style={{
-                border: "0.1px solid gray",
-                outline: "none",
-                // borderRadius: "10px",
-                color: "#222",
-              }}
-            />
-          ) : (
-            <div>{displayBio}</div>
-          )}
-        </div>
-        <div
-          style={{
-            paddingTop: "2rem",
-            paddingBottom: "2rem",
-            borderBottom: "1px solid #e4e7eb",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography
-              variant="h5"
-              sx={{ fontWeight: 600, marginBottom: "1rem" }}
-            >
-              <span>Interests</span>
-              <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-                {users && users.interests ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      flexWrap: "wrap",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    {users.interests.map((interest) => (
-                      <Button
-                        key={interest}
-                        variant="body2"
-                        sx={{ padding: "0.2rem", border: "1px solid green" }}
-                      >
-                        {interest}
-                      </Button>
-                    ))}
-                  </div>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "1rem" }}
+              >
+                <Typography>Date Joined:</Typography>
+                {users && users.time ? (
+                  <span>{formatDate(users.time)}</span>
                 ) : (
-                  "Your Interests will appear here"
+                  <span>No data available</span>
                 )}
               </div>
-            </Typography>
+            </div>
           </div>
-          {/* <Typography variant="body" sx={{ color: "gray", marginTop: "4rem" }}>
-            Your Interests will appear here
-          </Typography> */}
-        </div>
-        <div
-          style={{
-            paddingTop: "2rem",
-            paddingBottom: "2rem",
-            // borderBottom: "1px solid #e4e7eb",
-          }}
-        >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: "2rem",
-              borderBottom: "2px solid #e4e7eb",
+              marginTop: "2rem",
+              paddingBottom: "1rem",
+              borderBottom: "1px solid #e4e7eb",
+            }}
+          ></div>
+
+          <div
+            style={{
+              paddingTop: "2rem",
+              paddingBottom: "2rem",
+              borderBottom: "1px solid #e4e7eb",
             }}
           >
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 500, marginBottom: "1rem" }}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              <NavLink
-                className={isActiveLink}
-                style={{ textDecoration: "none", color: "gray" }}
-                to="/profile/my-posts"
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 600, marginBottom: "1rem" }}
               >
-                My Posts
-              </NavLink>
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 500, marginBottom: "1rem" }}
-            >
-              <NavLink
-                className={isActiveLink}
-                style={{ textDecoration: "none", color: "gray" }}
-                to="/profile/saved-posts"
-              >
-                Saved Posts
-              </NavLink>
-            </Typography>
+                About
+              </Typography>
+              {isBioEditing ? (
+                <>
+                  <Button
+                    onClick={() => setIsBioEditing(false)}
+                    variant="outlined"
+                    color="secondary"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={saveHandler}
+                  >
+                    Save
+                  </Button>
+                </>
+              ) : (
+                <EditIcon
+                  style={{ fontSize: "1rem", cursor: "pointer" }}
+                  onClick={bioHandler}
+                />
+              )}
+            </div>
+            <div></div>
+
+            {isBioEditing ? (
+              <textarea
+                disabled={!isBioEditing}
+                name="text"
+                value={bio.text}
+                onChange={(e) => handleInputChange(e)}
+                cols={60}
+                rows="fit-content"
+                style={{
+                  border: "0.1px solid gray",
+                  outline: "none",
+                  // borderRadius: "10px",
+                  color: "#222",
+                }}
+              />
+            ) : (
+              <div>{displayBio}</div>
+            )}
           </div>
-        </div>
+          <div
+            style={{
+              paddingTop: "2rem",
+              paddingBottom: "2rem",
+              borderBottom: "1px solid #e4e7eb",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 600, marginBottom: "1rem" }}
+              >
+                <span>Interests</span>
+                <div
+                  style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}
+                >
+                  {users && users.interests ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        flexWrap: "wrap",
+                        gap: "0.4rem",
+                      }}
+                    >
+                      {users.interests.map((interest) => (
+                        <Button
+                          key={interest}
+                          variant="body2"
+                          sx={{ padding: "0.2rem", border: "1px solid green" }}
+                        >
+                          {interest}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    "Your Interests will appear here"
+                  )}
+                </div>
+              </Typography>
+            </div>
+            {/* <Typography variant="body" sx={{ color: "gray", marginTop: "4rem" }}>
+            Your Interests will appear here
+          </Typography> */}
+          </div>
+          <div
+            style={{
+              paddingTop: "2rem",
+              paddingBottom: "2rem",
+              // borderBottom: "1px solid #e4e7eb",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "2rem",
+                borderBottom: "2px solid #e4e7eb",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, marginBottom: "1rem" }}
+              >
+                <NavLink
+                  className={isActiveLink}
+                  style={{ textDecoration: "none", color: "gray" }}
+                  to="/profile/my-posts"
+                >
+                  My Posts
+                </NavLink>
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 500, marginBottom: "1rem" }}
+              >
+                <NavLink
+                  className={isActiveLink}
+                  style={{ textDecoration: "none", color: "gray" }}
+                  to="/profile/saved-posts"
+                >
+                  Saved Posts
+                </NavLink>
+              </Typography>
+            </div>
+          </div>
+        </Box>
       </Container>
     </>
   );

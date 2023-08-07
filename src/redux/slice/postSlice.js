@@ -9,11 +9,9 @@ const postSlice = createSlice({
   initialState,
   reducers: {
     ADD_BLOG(state, action) {
-      console.log(action.payload);
       state.blogs.push(action.payload);
     },
     SET_BLOG(state, action) {
-        // console.log(action.payload);
       state.blogs = action.payload;
     },
   },

@@ -1,30 +1,26 @@
 import { Button, Container, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BsArrowLeftCircle } from "react-icons/bs";
 import { db } from "../../firebase/config";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  collection,
-  addDoc,
-  updateDoc,
-  doc,
-  getDoc,
-  Timestamp,
-} from "firebase/firestore";
-import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { useDispatch, useSelector } from "react-redux";
 import {
   selectEmail,
   selectFirstName,
   selectLastName,
-  selectUser,
+  selectUserId,
+  signup,
 } from "../../redux/slice/authSlice";
+import { ToastContainer, toast } from "react-toastify";
+
 const ManageInterests = () => {
+  const dispatch = useDispatch();
   const firstname = useSelector(selectFirstName);
   const lastname = useSelector(selectLastName);
   const email = useSelector(selectEmail);
-  const user = useSelector(selectUser);
+  const user = useSelector(selectUserId);
 
-  console.log(firstname, lastname, email, user);
   const navigate = useNavigate();
   const Interests = [
     "Technology",
@@ -52,18 +48,6 @@ const ManageInterests = () => {
 
   const [selectedInterests, setSelectedInterests] = useState([]);
 
-  //   useEffect(() => {
-  //     async function fetchInterests() {
-  //       const userDoc = await getDoc(doc(db, "users", userId));
-  //       if (userDoc.exists()) {
-  //         const userData = userDoc.data();
-  //         setSelectedInterests(userData.interests || []);
-  //         console.log(`fetching ${userData}`);
-  //       }
-  //     }
-  //     fetchInterests();
-  //   }, []);
-
   const handleInterestToggle = (interest) => {
     setSelectedInterests((prevInterests) => {
       if (prevInterests.includes(interest)) {
@@ -78,8 +62,6 @@ const ManageInterests = () => {
     e.preventDefault();
 
     try {
-      console.log("Saving user data with selected interests...");
-
       const signUpTime = Timestamp.now().toDate();
 
       const userData = {
@@ -89,14 +71,23 @@ const ManageInterests = () => {
         user,
         interests: selectedInterests,
         time: signUpTime,
-        id: user
+        id: user,
       };
+      dispatch(
+        signup({
+          firstname,
+          lastname,
+          email,
+          user,
+          interests: selectedInterests,
+          time: signUpTime,
+          id: user,
+        })
+      );
       const usersRef = await addDoc(collection(db, "users"), userData);
-      console.log(firstname, lastname, email);
-      console.log("User data with interests saved to Firebase.");
-      navigate(`/`);
+      navigate(`/login`);
     } catch (error) {
-      console.error("Error saving user data with interests:", error);
+      toast.error(error.message);
     }
   };
 
@@ -106,6 +97,7 @@ const ManageInterests = () => {
 
   return (
     <>
+      {<ToastContainer />}
       <Container
         maxWidth="sm"
         sx={{ height: "85vh", boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.02)" }}

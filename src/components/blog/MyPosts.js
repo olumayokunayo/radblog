@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/config";
 import { useSelector } from "react-redux";
 import { selectDisplayName } from "../../redux/slice/authSlice";
-import { Button, Container, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import Loader from "../loader/Loader";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DOMPurify from "dompurify";
@@ -30,7 +30,6 @@ const MyPosts = () => {
   const fetchBlogs = () => {
     try {
       setIsLoading(true);
-      console.log("fetching blogs...");
       const usersRef = collection(db, "blogs");
       const q = query(usersRef);
       onSnapshot(q, (snapshot) => {
@@ -61,7 +60,7 @@ const MyPosts = () => {
   };
   return (
     <>
-      <Container maxWidth="sm">
+      <Container maxWidth="sm" sx={{boxShadow: '0px 2px 4px 4px rgba(0,0,0,0.05)', padding: '5rem 1rem 1rem 1rem'}}>
         <Button
           onClick={backHandler}
           sx={{
@@ -74,6 +73,8 @@ const MyPosts = () => {
           <BsArrowLeftCircle />
           <span>Back</span>
         </Button>
+        <Box sx={{boxShadow: '0px 2px 4px 4px rgba(0,0,0,0.1)', marginTop: '1rem', padding: '1rem'}}>
+
         {isLoading ? (
           <Loader />
         ) : allBlogs.length === 0 ? (
@@ -112,8 +113,8 @@ const MyPosts = () => {
                 >
                   <img
                     src={blogPost.imageURL}
-                    alt="image"
-                    style={{ height: "200px", marginBottom: "2rem" }}
+                    alt={blogPost.title}
+                    style={{ height: "200px", marginBottom: "2rem", width: '100%' }}
                   />
                 </div>
                 <BlogDetail content={blogPost.content}></BlogDetail>
@@ -142,6 +143,7 @@ const MyPosts = () => {
             ))}
           </>
         )}
+        </Box>
       </Container>
     </>
   );

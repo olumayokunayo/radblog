@@ -1,7 +1,11 @@
 import { Box, Button, Container } from "@mui/material";
-import React from "react";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { db } from "../../firebase/config";
+import { selectUserId } from "../../redux/slice/authSlice";
+import { useSelector } from "react-redux";
 
-const interest = [
+const interests = [
   "All",
   "Technology",
   "Programming",
@@ -25,20 +29,31 @@ const interest = [
   "Marketing",
 ];
 
-const Interests = () => {
+const Interests = ({ onInterestChange }) => {
+  const id = useSelector(selectUserId);
+  const [selectedInterest, setSelectedInterest] = useState("All");
+
+  useEffect(() => {
+    onInterestChange(selectedInterest)
+  }, [selectedInterest]);
+
+  const handleInterestChange = (int) => {
+    setSelectedInterest(int);
+    onInterestChange(int)
+  };
   return (
     <>
       <Container
         maxWidth="lg"
         sx={{
-          marginTop: '1.5rem',
+          marginTop: "1.5rem",
           bgcolor: "#fff",
           overflowX: "scroll",
           width: "100%",
           "&::-webkit-scrollbar": {
             display: "none",
           },
-         borderBottom: '4px solid #e4e7eb'
+          borderBottom: "4px solid #e4e7eb",
         }}
       >
         <Box
@@ -49,16 +64,21 @@ const Interests = () => {
             padding: "1rem 2rem",
           }}
         >
-          {interest.map((int) => {
+          {interests.map((int) => {
             return (
               <Button
+                onClick={() => onInterestChange(int)}
+                variant={selectedInterest === int ? "contained" : "outlined"}
+                // color={selectedInterest === int ? 'primary' : 'default'}
                 sx={{
+                  padding: "0rem 3rem",
                   textTransform: "none",
                   fontSize: "0.9rem",
-                  color: int === "All" ? "green" : "gray",
-                  '&.css-e00z8e-MuiButtonBase-root-MuiButton-root' : {
-                    backgroundColor: 'red'
-                  }
+
+                  // color: int === "All" ? "green" : "gray",
+                  "&.css-e00z8e-MuiButtonBase-root-MuiButton-root": {
+                    backgroundColor: "red",
+                  },
                 }}
                 key={int}
               >

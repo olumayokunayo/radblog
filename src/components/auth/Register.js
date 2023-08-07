@@ -8,20 +8,15 @@ import { AiOutlineEyeInvisible } from "react-icons/ai";
 import { AiOutlineEye } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../../firebase/config";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { auth} from "../../firebase/config";
 import Loader from "../loader/Loader";
-import {
-  selectInterests,
-  selectedInterests,
-  signup,
-} from "../../redux/slice/authSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { signup } from "../../redux/slice/authSlice";
+import { useDispatch } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
 
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const interests = useSelector(selectInterests);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [data, setData] = useState({
@@ -32,9 +27,11 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  // Capitalize first letter of input field
   const capitalizeFirstLetter = (str) => {
     return str.charAt(0).toLocaleUpperCase() + str.slice(1);
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -71,33 +68,15 @@ const Register = () => {
           lastName,
           email,
           uid: user.uid,
-          // interests: [],
         })
       );
-      dispatch(
-        selectedInterests({
-          email,
-          password,
-          firstName,
-          lastName,
-          uid: user.uid,
-        })
-      );
-
-      // const signUpTime = Timestamp.now().toDate();
-      // await addDoc(collection(db, "users"), {
-      //   firstName,
-      //   lastName,
-      //   email,
-      //   uid: user.uid,
-      //   time: signUpTime,
-      // });
-
+  
       setIsLoading(false);
+      toast.success("Registration successful");
       navigate(`/manage-interests`);
     } catch (error) {
       setIsLoading(false);
-      console.error("Error during registration:", error);
+      toast.error(error.message);
     }
   };
 
@@ -106,6 +85,7 @@ const Register = () => {
   };
   return (
     <>
+      {<ToastContainer />}
       {isLoading && <Loader />}
       <Container
         maxWidth="xs"

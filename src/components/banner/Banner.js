@@ -15,7 +15,7 @@ const Banner = () => {
   return (
     <Container
       maxWidth="xl"
-      sx={{ backgroundImage: "linear-gradient(to right, #e6f4e9 ,#fff, #fff)" }}
+      sx={{ backgroundImage: "linear-gradient(to right, #e6f4e9 ,#fff, #fff)", padding: '2rem' }}
     >
       <Container
         maxWidth="lg"

@@ -13,6 +13,7 @@ import Reset from "./components/auth/Reset";
 import Profile from "./components/profile/Profile";
 import ManageInterests from "./components/profile/ManageInterests";
 import MyPosts from "./components/blog/MyPosts";
+import SavedPosts from "./components/blog/SavedPosts";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/manage-interests" element={<ManageInterests />} />
           <Route path="/profile/my-posts" element={<MyPosts />} />
+          <Route path="/profile/saved-posts" element={<SavedPosts />} />
         </Routes>
       </BrowserRouter>
     </>
