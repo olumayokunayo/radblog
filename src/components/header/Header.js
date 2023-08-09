@@ -25,6 +25,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
 import { SHOW_WRITE_POST, selectIsShown } from "../../redux/slice/showSlice";
+import "./Header.css";
 
 const Header = () => {
   const isShown = useSelector(selectIsShown);
@@ -38,12 +39,13 @@ const Header = () => {
   const [display, setDisplay] = useState("");
   const [showHeader, setShowHeader] = useState(true);
   const [isWritingBlog, setIsWritingBlog] = useState(false);
+  const [scrollPage, setScrollPage] = useState(false);
 
   const fixedNavbar = () => {
     if (window.scrollY > 50) {
-      setShowHeader(false);
+      setScrollPage(true);
     } else {
-      setShowHeader(true);
+      setScrollPage(false);
     }
   };
 
@@ -81,6 +83,17 @@ const Header = () => {
   };
 
   useEffect(() => {
+    if (isLoading) {
+      const delay = setTimeout(() => {
+        setIsLoading(false);
+        navigate("/profile");
+      }, 1000);
+
+      return () => clearTimeout(delay);
+    }
+  }, [isLoading, navigate]);
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         const { displayName } = user;
@@ -105,14 +118,17 @@ const Header = () => {
       {isLoading && <Loader />}
       {showHeader && (
         <Container maxWidth="lg">
-          <Box sx={{ flexGrow: 1 }}>
+          <Box sx={{ flexGrow: 2 }}>
             <AppBar
-              position="fixed"
+              className={scrollPage ? "fixed" : ""}
               sx={{
                 backgroundColor: "#ffffff",
                 boxShadow: "none",
                 padding: "0.5rem 8rem",
-                
+                "@media (max-width: 800px)": {
+                  flexDirection: "column",
+                  padding: "0.5rem",
+                },
               }}
             >
               <Toolbar>
@@ -135,6 +151,9 @@ const Header = () => {
                         "&:hover": {
                           bgcolor: "darkgreen",
                         },
+                        "@media (max-width: 800px)": {
+                          padding: "0.5rem 1rem ",
+                        },
                       }}
                     >
                       <Typography
@@ -142,6 +161,7 @@ const Header = () => {
                           textTransform: "none",
                           textDecoration: "none",
                           color: "#fff",
+                          "@media (max-width: 700px)": { display: "none" },
                         }}
                       >
                         Write a Post
@@ -231,8 +251,9 @@ const Header = () => {
                                       textDecoration: "none",
                                       color: "#222",
                                     }}
+                                    onClick={() => setIsLoading(true)}
                                   >
-                                    Profile
+                                    {isLoading ? <Loader /> : "Profile"}
                                   </Link>
                                 </Typography>
                               </Button>

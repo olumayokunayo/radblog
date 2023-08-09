@@ -96,7 +96,7 @@ const Profile = () => {
   useEffect(() => {
     fetchUserData();
     fetchBlogs();
-  }, []);
+  }, [id]);
 
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
@@ -123,10 +123,24 @@ const Profile = () => {
 
   const saveHandler = async () => {
     try {
-      console.log('starting..');
-      const usersRef = doc(db, "users", idg);
-      updateDoc(usersRef, {
-        about: bio,
+      const usersRef = collection(db, "users");
+      const q = query(usersRef);
+      onSnapshot(q, (snapshot) => {
+        const allUsers = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log(allUsers);
+        const userDat = allUsers.find((user) => user.id === id);
+        console.log(userDat);
+
+        if (userDat) {
+          console.log(true);
+          const userDocRef = doc(db, "users", userDat.id);
+          updateDoc(userDocRef, {
+            about: bio.text,
+          });
+        }
       });
     } catch (error) {
       console.log(error.message);
@@ -140,10 +154,10 @@ const Profile = () => {
     <>
       {isLoading && <Loader />}
       <Container
-        maxWidth="sm"
+        maxWidth="md"
         sx={{
           height: "fit-content",
-          boxShadow: "2px 2px 8px 4px rgba(0,0,0,0.05)",
+          // boxShadow: "2px 2px 8px 4px rgba(0,0,0,0.05)",
           paddingTop: "8rem",
           // padding: "1rem",
         }}
@@ -166,8 +180,7 @@ const Profile = () => {
           <Typography
             variant="h5"
             sx={{
-              borderBottom: "1px solid #e4e7eb",
-              width: "fit-content",
+              width: "100%",
               fontWeight: 600,
               textAlign: "center",
             }}
@@ -175,15 +188,10 @@ const Profile = () => {
             My Profile
           </Typography>
 
-          <Typography>
-            <Link style={{ color: "green", fontSize: "1rem" }}>
-              edit profile
-            </Link>
-          </Typography>
         </Box>
         <Box
           sx={{
-            boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.1)",
+            boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.05)",
             padding: "1rem",
             height: "fit-content",
           }}
@@ -278,13 +286,15 @@ const Profile = () => {
                 name="text"
                 value={bio.text}
                 onChange={(e) => handleInputChange(e)}
-                cols={60}
+                // cols={60}
                 rows="fit-content"
                 style={{
+                  width: "100%",
                   border: "0.1px solid gray",
                   outline: "none",
                   // borderRadius: "10px",
                   color: "#222",
+                  "@media (max-width: 700px)": { width: "10px" },
                 }}
               />
             ) : (
@@ -366,7 +376,7 @@ const Profile = () => {
                   style={{ textDecoration: "none", color: "gray" }}
                   to="/profile/my-posts"
                 >
-                  My Posts
+                  Posts
                 </NavLink>
               </Typography>
               <Typography
@@ -376,9 +386,9 @@ const Profile = () => {
                 <NavLink
                   className={isActiveLink}
                   style={{ textDecoration: "none", color: "gray" }}
-                  to="/profile/saved-posts"
+                  to="/profile/bookmarks"
                 >
-                  Saved Posts
+                  Bookmarks
                 </NavLink>
               </Typography>
             </div>

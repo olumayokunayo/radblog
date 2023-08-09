@@ -34,18 +34,19 @@ const Interests = ({ onInterestChange }) => {
   const [selectedInterest, setSelectedInterest] = useState("All");
 
   useEffect(() => {
-    onInterestChange(selectedInterest)
+    onInterestChange(selectedInterest);
   }, [selectedInterest]);
 
   const handleInterestChange = (int) => {
     setSelectedInterest(int);
-    onInterestChange(int)
+    onInterestChange(int);
   };
   return (
     <>
       <Container
         maxWidth="lg"
         sx={{
+          borderRadius: '10px',
           marginTop: "1.5rem",
           bgcolor: "#fff",
           overflowX: "scroll",
@@ -62,6 +63,11 @@ const Interests = ({ onInterestChange }) => {
             gap: "2rem",
             whiteSpace: "nowrap",
             padding: "1rem 2rem",
+            borderRadius: '20px',
+            "@media (max-width: 768px)": {
+              padding: "0.5rem 0.1rem",
+              marginRight: "2rem",
+            },
           }}
         >
           {interests.map((int) => {
@@ -69,13 +75,11 @@ const Interests = ({ onInterestChange }) => {
               <Button
                 onClick={() => onInterestChange(int)}
                 variant={selectedInterest === int ? "contained" : "outlined"}
-                // color={selectedInterest === int ? 'primary' : 'default'}
                 sx={{
                   padding: "0rem 3rem",
                   textTransform: "none",
                   fontSize: "0.9rem",
-
-                  // color: int === "All" ? "green" : "gray",
+                  "@media (max-width: 768px)": { padding: "0rem 3rem" },
                   "&.css-e00z8e-MuiButtonBase-root-MuiButton-root": {
                     backgroundColor: "red",
                   },

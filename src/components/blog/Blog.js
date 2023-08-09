@@ -5,17 +5,33 @@ import Search from "../search/Search";
 import Interests from "../interests/Interests";
 import { SET_BLOG, selectBlogs } from "../../redux/slice/postSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 import { db } from "../../firebase/config";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Loader from "../loader/Loader";
 import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
-import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import { selectUserId } from "../../redux/slice/authSlice";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import {
+  addBookmarkedPost,
+  addLikedPost,
+  getBookmarkedPosts,
+  getLikedPosts,
+} from "../functions/Functions";
 
 // edit <p> tag from content
 const BlogPost = ({ content }) => {
@@ -28,7 +44,7 @@ const BlogPost = ({ content }) => {
 
   return (
     <div
-      style={{ color: "black" }}
+      style={{ color: "black", marginBottom: "2rem" }}
       dangerouslySetInnerHTML={{ __html: contentWithoutPTags }}
     />
   );
@@ -44,6 +60,8 @@ const Blog = () => {
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [selectedInterest, setSelectedInterest] = useState("All");
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [likedPosts, setLikedPosts] = useState({});
+  const [bookmarkedPosts, setBookmarkedPosts] = useState({});
 
   const sliceContent = (content, limit) => {
     const words = content.split(" ");
@@ -117,49 +135,118 @@ const Blog = () => {
     setSelectedInterests(filtered);
     console.log(selectedInterests);
   };
+
+  const handleLike = (postId) => {
+    const updatedLikes = {
+      ...likedPosts,
+      [postId]: !likedPosts[postId],
+    };
+
+    localStorage.setItem("likedBlogs", JSON.stringify(updatedLikes));
+    if (updatedLikes[postId]) {
+      addLikedPost(id, postId);
+    }
+    setLikedPosts(updatedLikes);
+  };
+
+  const handleBookmark = (postId) => {
+    const updatedBookmarked = {
+      ...bookmarkedPosts,
+      [postId]: !bookmarkedPosts[postId],
+    };
+    localStorage.setItem("bookmarkedBlogs", JSON.stringify(updatedBookmarked));
+    if (updatedBookmarked[postId]) {
+      addBookmarkedPost(id, postId);
+    }
+    setBookmarkedPosts(updatedBookmarked);
+  };
+
+  useEffect(() => {
+    const likedPosts = localStorage.getItem("likedBlogs");
+    if (likedPosts) {
+      setLikedPosts(JSON.parse(likedPosts));
+    }
+
+    const bookmarkedPosts = localStorage.getItem("bookmarkedBlogs");
+    if (bookmarkedPosts) {
+      setBookmarkedPosts(JSON.parse(bookmarkedPosts));
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchLikedPosts = async () => {
+      const likedPosts = await getLikedPosts(id);
+      const likedPostsData = [];
+
+      for (const postId of likedPosts) {
+        const postsRef = doc(db, "blogs", postId);
+        const postDoc = await getDoc(postsRef);
+        if (postDoc.exists()) {
+          likedPostsData.push({ id: postDoc.id, ...postDoc.data() });
+        }
+      }
+      console.log(likedPostsData);
+    };
+
+    const fetchBookmarkedPosts = async () => {
+      const bookmarkedPosts = await getBookmarkedPosts(id);
+      const bookmarkedPostsData = [];
+
+      for (const postId of bookmarkedPosts) {
+        const postsRef = doc(db, "blogs", postId);
+        const postsDoc = await getDoc(postsRef);
+        if (postsDoc.exists()) {
+          bookmarkedPostsData.push({ id: postsDoc.id, ...postsDoc.data() });
+        }
+      }
+      console.log(bookmarkedPostsData);
+    };
+    fetchLikedPosts();
+    fetchBookmarkedPosts();
+  }, []);
   return (
     <>
       {isLoading && <Loader />}
       <Container
         maxWidth="xl"
-        sx={{
-          bgcolor: "#28a76c",
-          color: "#fff",
-          // backgroundImage: "linear-gradient(to right,#e6f4e9 ,#f1fff5,#e6f4e9)",
-          height: "30vh",
-          borderRadius: "5px",
-        }}
+        sx={{marginTop: '6rem'}}
       >
-        <Container
-          maxWidth="lg"
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "30vh",
-          }}
-        >
-          <Typography variant="body" sx={{ fontWeight: "500" }}>
-            Welcome to RadBlog...
-          </Typography>
-        </Container>
-
-        <Container maxWidth="md" sx={{ paddingTop: "3rem" }}>
-          <Box sx={{ height: "fit-content", width: "100%" }}>
+      {/* <Typography variant="h3" sx={{color: '#222', textAlign: 'center', fontWeight: 600, marginBottom: '2rem'}}>Blog.</Typography> */}
+        <Container maxWidth="md" sx={{}}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: "1rem",
+              height: "fit-content",
+              width: "100%",
+              "@media (maxWidth: 768px)": {
+                flexDirection: "column",
+                alignItems: "flex-start",
+              },
+            }}
+          >
             <input
               type="text"
               placeholder="Search posts by title, authors, categories"
               value={searchInput}
               onChange={(e) => handleInputChange(e)}
               style={{
-                padding: "0rem 1rem",
+                padding: "0.2rem",
                 height: "3.2rem",
+                marginRight: "2rem",
                 width: "80%",
                 outline: "none",
                 border: "0.1px solid gray",
                 borderTopLeftRadius: "15px",
                 borderBottomLeftRadius: "15px",
-                boxShadow: " 1px 2px 8px 8px rgba(0, 0, 0, 0.1)",
+                borderTopRightRadius: "15px",
+                borderBottomRightRadius: "15px",
+                boxShadow: "1px 2px 8px 8px rgba(0, 0, 0, 0.1)",
+                "@media (maxWidth: 768px)": {
+                  marginBottom: "1rem",
+                  borderRadius: "15px",
+                },
               }}
             />
 
@@ -169,18 +256,21 @@ const Blog = () => {
                 bgcolor: "#222",
                 height: "3.29rem",
                 padding: "1.5rem 0",
-                borderTopLeftRadius: "1px",
-                borderBottomLeftRadius: "1px",
-                borderTopRightRadius: "15px",
-                borderBottomRightRadius: "15px",
+                borderRadius: "15px",
                 "&:hover": {
                   bgcolor: "black",
+                },
+                "@media (max-width: 768px)": {
+                  width: "18%",
+                  position: "absolute",
+                  right: "5%",
+                  padding: "1.8rem",
                 },
               }}
             >
               <SearchIcon />
             </Button>
-            {searchInput && (
+            {searchInput && window.innerWidth > 768 && (
               <Button onClick={clearHandler}>
                 <ClearIcon />
               </Button>
@@ -188,40 +278,158 @@ const Blog = () => {
           </Box>
         </Container>
 
-        {/* <Search onSearch={handleSearch}/> */}
         <Interests onInterestChange={handleInterestChange} />
-        <Container maxWidth="lg" sx={{ padding: "2rem" }}>
-          <div>
-            {isFilterActive ? (
-              filteredData?.length > 0 ? (
-                filteredData.map((blog) => (
-                  <div
-                    key={blog.id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "start",
-                      marginBottom: "20px",
-                      borderBottom: "3px solid #e4e7eb",
-                      padding: "1rem",
+
+        <Container maxWidth="md">
+          {isFilterActive ? (
+            filteredData?.length > 0 ? (
+              filteredData.map((blog) => (
+                <div key={blog.id}>
+                  <Container
+                    sx={{
+                      paddingTop: "2rem",
+                      marginBottom: "1rem",
                     }}
                   >
-                    {/* Left column for the image */}
-                    <div style={{ flex: 3, marginLeft: "20px" }}>
+                    <Box
+                      component={Link}
+                      to={`/user/${id}`}
+                      sx={{
+                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        color: "#222",
+                      }}
+                    >
+                      <IconButton sx={{ p: 0 }}>
+                        <Avatar
+                          sx={{ bgcolor: "#222", color: "#fff" }}
+                          alt={blog.postedBy.charAt(0).toLocaleUpperCase()}
+                          src="/static/images/avatar/2.jpg"
+                        />
+                      </IconButton>
+                      <span>
+                        <Typography variant="body1" sx={{ fontSize: "1rem" }}>
+                          {blog.postedBy}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "gray", fontSize: "0.6rem" }}
+                        >
+                          {`${getDaysAgo(blog.createdAt.seconds)} ${
+                            getDaysAgo(blog.createdAt.seconds) <= 1
+                              ? "day"
+                              : "days"
+                          } ago`}
+                        </Typography>
+                      </span>
+                    </Box>
+                  </Container>
+                  <Container
+                    sx={{
+                      display: "flex",
+                      gap: "4rem",
+                      "@media (max-width: 700px)": { display: "block" },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: "100%",
+                        "@media (max-width: 700px)": { width: "100%" },
+                      }}
+                    >
                       <img
                         src={blog.imageURL}
                         alt="blog"
-                        style={{ height: "300px", width: "70%" }}
+                        style={{
+                          height: "300px",
+                          width: "100%",
+                          borderRadius: "8px",
+                        }}
                       />
-                    </div>
-
-                    {/* Right column for title, content, and other information */}
-                    <div style={{ flex: 3 }}>
+                    </Box>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        "@media (max-width: 700px)": { width: "100%" },
+                      }}
+                    >
                       <div
                         style={{
                           display: "flex",
+                          gap: "0.5rem",
                           alignItems: "center",
-                          gap: "1rem",
+                          marginBottom: "1rem",
+                        }}
+                      >
+                        <AccessTimeIcon style={{ color: "gray" }} />
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "gray", fontSize: "0.8rem" }}
+                        >{`${blog.duration} mins read`}</Typography>
+                      </div>
+                      <Typography
+                        variant="h4"
+                        sx={{ color: "#222", marginBottom: "1rem" }}
+                      >{`${blog.title}`}</Typography>
+                      <BlogPost content={`${sliceContent(blog.content, 15)}`} />
+                      <Box>
+                        <Typography
+                          sx={{
+                            color: "#222",
+                            width: "fit-content",
+                            bgcolor: "lightgreen",
+                            padding: "0.4rem",
+                            borderRadius: "30px",
+                            border: "1px solid green",
+                            marginBottom: "2rem",
+                          }}
+                          variant="body2"
+                        >
+                          {blog.categories.join(" / ")}
+                        </Typography>
+
+                        <div
+                          style={{
+                            marginBottom: "1rem",
+                          }}
+                        >
+                          {likedPosts[blog.id] ? (
+                            <FavoriteIcon color="red" />
+                          ) : (
+                            <FavoriteBorderIcon />
+                          )}{" "}
+                          {bookmarkedPosts[blog.id] ? (
+                            <BookmarkIcon
+                              onClick={() => handleBookmark(blog.id)}
+                              style={{ color: "black" }}
+                            />
+                          ) : (
+                            <BookmarkBorderIcon
+                              onClick={() => handleBookmark(blog.id)}
+                              style={{
+                                color: "black",
+                              }}
+                            />
+                          )}
+                        </div>
+                      </Box>
+                    </Box>
+                  </Container>
+                </div>
+              ))
+            ) : (
+              <Typography>No results found</Typography>
+            )
+          ) : (
+            <>
+              {selectedInterests.length > 0
+                ? selectedInterests.map((blog) => (
+                    <div key={blog.id}>
+                      <Container
+                        sx={{
+                          paddingTop: "2rem",
                           marginBottom: "1rem",
                         }}
                       >
@@ -246,13 +454,13 @@ const Blog = () => {
                           <span>
                             <Typography
                               variant="body1"
-                              sx={{ fontSize: "1.2rem" }}
+                              sx={{ fontSize: "1rem" }}
                             >
                               {blog.postedBy}
                             </Typography>
                             <Typography
                               variant="body2"
-                              sx={{ color: "gray", fontSize: "0.8rem" }}
+                              sx={{ color: "gray", fontSize: "0.6rem" }}
                             >
                               {`${getDaysAgo(blog.createdAt.seconds)} ${
                                 getDaysAgo(blog.createdAt.seconds) <= 1
@@ -262,359 +470,280 @@ const Blog = () => {
                             </Typography>
                           </span>
                         </Box>
-                      </div>
-                      <Typography
-                        variant="h4"
-                        sx={{ marginBottom: "1rem", color: "black" }}
-                      >
-                        {blog.title}
-                      </Typography>
-                      <BlogPost content={`${sliceContent(blog.content, 20)}`} />
-                      <Typography sx={{ marginTop: "1rem" }}>
-                        <Link
-                          to={`/blog/${blog.id}`}
-                          style={{
-                            textDecoration: "none",
-                            color: "#008001",
-                            fontWeight: 500,
-                          }}
-                        >
-                          Read more
-                        </Link>
-                      </Typography>
-                      <div
-                        style={{
+                      </Container>
+                      <Container
+                        sx={{
                           display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          marginTop: "1rem",
+                          gap: "4rem",
+                          "@media (max-width: 700px)": { display: "block" },
                         }}
                       >
-                        <ThumbUpOffAltIcon style={{ color: "black" }} />{" "}
-                        <span style={{ color: "black" }}>0 likes</span>
-                      </div>
-                    </div>
+                        <Box
+                          sx={{
+                            width: "100%",
+                            "@media (max-width: 700px)": { width: "100%" },
+                          }}
+                        >
+                          <img
+                            src={blog.imageURL}
+                            alt="blog"
+                            style={{
+                              height: "300px",
+                              width: "100%",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            width: "100%",
+                            "@media (max-width: 700px)": { width: "100%" },
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "0.5rem",
+                              alignItems: "center",
+                              marginBottom: "1rem",
+                            }}
+                          >
+                            <AccessTimeIcon style={{ color: "gray" }} />
+                            <Typography
+                              variant="body1"
+                              sx={{ color: "gray", fontSize: "0.8rem" }}
+                            >{`${blog.duration} mins read`}</Typography>
+                          </div>
+                          <Typography
+                            variant="h4"
+                            sx={{ color: "#222", marginBottom: "1rem" }}
+                          >{`${blog.title}`}</Typography>
+                          <BlogPost
+                            content={`${sliceContent(blog.content, 15)}`}
+                          />
+                          <Box>
+                            <Typography
+                              sx={{
+                                color: "#222",
+                                width: "fit-content",
+                                bgcolor: "lightgreen",
+                                padding: "0.4rem",
+                                borderRadius: "30px",
+                                border: "1px solid green",
+                                marginBottom: "2rem",
+                              }}
+                              variant="body2"
+                            >
+                              {blog.categories.join(" / ")}
+                            </Typography>
 
-                    {/* column for duration */}
+                            <div
+                              style={{
+                                marginBottom: "1rem",
+                              }}
+                            >
+                              {likedPosts[blog.id] ? (
+                                <FavoriteIcon color="red" />
+                              ) : (
+                                <FavoriteBorderIcon />
+                              )}{" "}
+                              {bookmarkedPosts[blog.id] ? (
+                                <BookmarkIcon
+                                  onClick={() => handleBookmark(blog.id)}
+                                  style={{ color: "black" }}
+                                />
+                              ) : (
+                                <BookmarkBorderIcon
+                                  onClick={() => handleBookmark(blog.id)}
+                                  style={{
+                                    color: "black",
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </Box>
+                        </Box>
+                      </Container>
+                    </div>
+                  ))
+                : allBlogData.map((blog) => (
                     <div
+                      key={blog.id}
                       style={{
-                        display: "grid",
-                        gap: "6em",
+                        boxShadow: "0px 4px 4px 4px rgba(0,0,0,0.1)",
+                        marginTop: "1rem",
                       }}
                     >
-                      <div
-                        style={{
-                          flex: 1,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "0.5rem",
+                      <Container
+                        sx={{
+                          paddingTop: "2rem",
+                          marginBottom: "1rem",
                         }}
                       >
-                        <AccessTimeIcon style={{ color: "gray" }} />
-                        <Typography
-                          variant="body1"
-                          sx={{ color: "gray", fontSize: "0.8rem" }}
-                        >{`${blog.duration} mins read`}</Typography>
-                      </div>
+                        <Box
+                          component={Link}
+                          to={`/user/${id}`}
+                          sx={{
+                            textDecoration: "none",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            color: "#222",
+                          }}
+                        >
+                          <IconButton sx={{ p: 0 }}>
+                            <Avatar
+                              sx={{ bgcolor: "#222", color: "#fff" }}
+                              alt={blog.postedBy.charAt(0).toLocaleUpperCase()}
+                              src="/static/images/avatar/2.jpg"
+                            />
+                          </IconButton>
+                          <span>
+                            <Typography
+                              variant="body1"
+                              sx={{ fontSize: "1rem" }}
+                            >
+                              {blog.postedBy}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: "gray", fontSize: "0.6rem" }}
+                            >
+                              {`${getDaysAgo(blog.createdAt.seconds)} ${
+                                getDaysAgo(blog.createdAt.seconds) <= 1
+                                  ? "day"
+                                  : "days"
+                              } ago`}
+                            </Typography>
+                          </span>
+                        </Box>
+                      </Container>
+                      <Container
+                        sx={{
+                          display: "flex",
+                          gap: "4rem",
+                          "@media (max-width: 700px)": { display: "block" },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: "100%",
+                            "@media (max-width: 700px)": { width: "100%" },
+                          }}
+                        >
+                          <img
+                            src={blog.imageURL}
+                            alt="blog"
+                            style={{
+                              height: "300px",
+                              width: "100%",
+                              borderRadius: "8px",
+                            }}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            width: "100%",
+                            "@media (max-width: 700px)": { width: "100%" },
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "0.5rem",
+                              alignItems: "center",
+                              marginBottom: "1rem",
+                            }}
+                          >
+                            <AccessTimeIcon style={{ color: "gray" }} />
+                            <Typography
+                              variant="body1"
+                              sx={{ color: "gray", fontSize: "0.8rem" }}
+                            >{`${blog.duration} mins read`}</Typography>
+                          </div>
+                          <Typography
+                            variant="h4"
+                            sx={{ color: "#222", marginBottom: "1rem" }}
+                          >{`${blog.title}`}</Typography>
+                          <BlogPost
+                            content={`${sliceContent(blog.content, 15)}`}
+                          />
+                          <Box>
+                            <Typography
+                              sx={{
+                                marginTop: "1rem",
+                                marginBottom: "1rem",
+                                "@media (max-width: 768px)": {
+                                  fontSize: "0.9rem",
+                                },
+                              }}
+                            >
+                              <Link
+                                to={`/blog/${blog.id}`}
+                                style={{
+                                  textDecoration: "none",
+                                  color: "#008001",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Read more
+                              </Link>
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: "#222",
+                                width: "fit-content",
+                                bgcolor: "lightgreen",
+                                padding: "0.2rem",
+                                borderRadius: "30px",
+                                border: "1px solid green",
+                                marginBottom: "2rem",
+                                "@media (max-width: 768px)": {
+                                  marginBottom: "1rem",
+                                },
+                              }}
+                              variant="body2"
+                            >
+                              {blog.categories.join(" / ")}
+                            </Typography>
 
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <BookmarkBorderIcon style={{ color: "black" }} />
-                        <span style={{ fontSize: "1rem", color: "black" }}>
-                          0 bookmarks
-                        </span>
-                      </div>
+                            <div
+                              style={{
+                                marginBottom: "1rem",
+                              }}
+                            >
+                              {likedPosts[blog.id] ? (
+                                <FavoriteIcon
+                                  onClick={() => handleLike(blog.id)}
+                                  style={{ color: "red" }}
+                                />
+                              ) : (
+                                <FavoriteBorderIcon
+                                  onClick={() => handleLike(blog.id)}
+                                  style={{ color: "black" }}
+                                />
+                              )}{" "}
+                              {bookmarkedPosts[blog.id] ? (
+                                <BookmarkIcon
+                                  onClick={() => handleBookmark(blog.id)}
+                                  style={{ color: "black" }}
+                                />
+                              ) : (
+                                <BookmarkBorderIcon
+                                  onClick={() => handleBookmark(blog.id)}
+                                  style={{
+                                    color: "black",
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </Box>
+                        </Box>
+                      </Container>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <Typography>No results found</Typography>
-              )
-            ) : (
-              <>
-                {selectedInterests.length > 0
-                  ? selectedInterests.map((blog) => (
-                      <div
-                        key={blog.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "start",
-                          marginBottom: "20px",
-                          borderBottom: "3px solid #e4e7eb",
-                          padding: "1rem",
-                        }}
-                      >
-                        {/* Left column for the image */}
-                        <div style={{ flex: 3, marginLeft: "20px" }}>
-                          <img
-                            src={blog.imageURL}
-                            alt="blog"
-                            style={{ height: "300px", width: "70%" }}
-                          />
-                        </div>
-
-                        {/* Right column for title, content, and other information */}
-                        <div style={{ flex: 3 }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "1rem",
-                              marginBottom: "1rem",
-                            }}
-                          >
-                            <Box
-                              component={Link}
-                              to={`/user/${id}`}
-                              sx={{
-                                textDecoration: "none",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                color: "#222",
-                              }}
-                            >
-                              <IconButton sx={{ p: 0 }}>
-                                <Avatar
-                                  sx={{ bgcolor: "#222", color: "#fff" }}
-                                  alt={blog.postedBy
-                                    .charAt(0)
-                                    .toLocaleUpperCase()}
-                                  src="/static/images/avatar/2.jpg"
-                                />
-                              </IconButton>
-                              <span>
-                                <Typography
-                                  variant="body1"
-                                  sx={{ fontSize: "1.2rem" }}
-                                >
-                                  {blog.postedBy}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ color: "gray", fontSize: "0.8rem" }}
-                                >
-                                  {`${getDaysAgo(blog.createdAt.seconds)} ${
-                                    getDaysAgo(blog.createdAt.seconds) <= 1
-                                      ? "day"
-                                      : "days"
-                                  } ago`}
-                                </Typography>
-                              </span>
-                            </Box>
-                          </div>
-                          <Typography
-                            variant="h4"
-                            sx={{ marginBottom: "1rem", color: "black" }}
-                          >
-                            {blog.title}
-                          </Typography>
-                          <BlogPost
-                            content={`${sliceContent(blog.content, 20)}`}
-                          />
-                          <Typography sx={{ marginTop: "1rem" }}>
-                            <Link
-                              to={`/blog/${blog.id}`}
-                              style={{
-                                textDecoration: "none",
-                                color: "#008001",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Read more
-                            </Link>
-                          </Typography>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              marginTop: "1rem",
-                            }}
-                          >
-                            <ThumbUpOffAltIcon style={{ color: "black" }} />{" "}
-                            <span style={{ color: "black" }}>0 likes</span>
-                          </div>
-                        </div>
-
-                        {/* column for duration */}
-                        <div
-                          style={{
-                            display: "grid",
-                            gap: "6em",
-                          }}
-                        >
-                          <div
-                            style={{
-                              flex: 1,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "0.5rem",
-                            }}
-                          >
-                            <AccessTimeIcon style={{ color: "gray" }} />
-                            <Typography
-                              variant="body1"
-                              sx={{ color: "gray", fontSize: "0.8rem" }}
-                            >{`${blog.duration} mins read`}</Typography>
-                          </div>
-
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <BookmarkBorderIcon style={{ color: "black" }} />
-                            <span style={{ fontSize: "1rem", color: "black" }}>
-                              0 bookmarks
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                    
-                  : allBlogData.map((blog) => (
-                      <div
-                        key={blog.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "start",
-                          marginBottom: "20px",
-                          borderBottom: "3px solid #e4e7eb",
-                          padding: "1rem",
-                        }}
-                      >
-                        {/* Left column for the image */}
-                        <div style={{ flex: 3, marginLeft: "20px" }}>
-                          <img
-                            src={blog.imageURL}
-                            alt="blog"
-                            style={{ height: "300px", width: "70%" }}
-                          />
-                        </div>
-
-                        {/* Right column for title, content, and other information */}
-                        <div style={{ flex: 3 }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "1rem",
-                              marginBottom: "1rem",
-                            }}
-                          >
-                            <Box
-                              component={Link}
-                              to={`/user/${id}`}
-                              sx={{
-                                textDecoration: "none",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "0.5rem",
-                                color: "#222",
-                              }}
-                            >
-                              <IconButton sx={{ p: 0 }}>
-                                <Avatar
-                                  sx={{ bgcolor: "#222", color: "#fff" }}
-                                  alt={blog.postedBy
-                                    .charAt(0)
-                                    .toLocaleUpperCase()}
-                                  src="/static/images/avatar/2.jpg"
-                                />
-                              </IconButton>
-                              <span>
-                                <Typography
-                                  variant="body1"
-                                  sx={{ fontSize: "1.2rem" }}
-                                >
-                                  {blog.postedBy}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  sx={{ color: "gray", fontSize: "0.8rem" }}
-                                >
-                                  {`${getDaysAgo(blog.createdAt.seconds)} ${
-                                    getDaysAgo(blog.createdAt.seconds) <= 1
-                                      ? "day"
-                                      : "days"
-                                  } ago`}
-                                </Typography>
-                              </span>
-                            </Box>
-                          </div>
-                          <Typography
-                            variant="h4"
-                            sx={{ marginBottom: "1rem", color: "black" }}
-                          >
-                            {blog.title}
-                          </Typography>
-                          <BlogPost
-                            content={`${sliceContent(blog.content, 20)}`}
-                          />
-                          <Typography sx={{ marginTop: "1rem" }}>
-                            <Link
-                              to={`/blog/${blog.id}`}
-                              style={{
-                                textDecoration: "none",
-                                color: "#008001",
-                                fontWeight: 500,
-                              }}
-                            >
-                              Read more
-                            </Link>
-                          </Typography>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              marginTop: "1rem",
-                            }}
-                          >
-                            <ThumbUpOffAltIcon style={{ color: "black" }} />{" "}
-                            <span style={{ color: "black" }}>0 likes</span>
-                          </div>
-                        </div>
-
-                        {/* column for duration */}
-                        <div
-                          style={{
-                            display: "grid",
-                            gap: "6em",
-                          }}
-                        >
-                          <div
-                            style={{
-                              flex: 1,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "0.5rem",
-                            }}
-                          >
-                            <AccessTimeIcon style={{ color: "gray" }} />
-                            <Typography
-                              variant="body1"
-                              sx={{ color: "gray", fontSize: "0.8rem" }}
-                            >{`${blog.duration} mins read`}</Typography>
-                          </div>
-
-                          <div
-                            style={{ display: "flex", alignItems: "center" }}
-                          >
-                            <BookmarkBorderIcon style={{ color: "black" }} />
-                            <span style={{ fontSize: "1rem", color: "black" }}>
-                              0 bookmarks
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-              </>
-            )}
-          </div>
+                  ))}
+            </>
+          )}
         </Container>
       </Container>
     </>

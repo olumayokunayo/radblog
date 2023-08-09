@@ -99,11 +99,12 @@ const Users = () => {
     <>
       {isLoading && <Loader />}
 
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Box
           sx={{
-            boxShadow: "2px 4px 4px 2px rgba(0,0,0,0.05)",
+            // boxShadow: "2px 4px 4px 2px rgba(0,0,0,0.05)",
             height: "fit-contnent",
+            marginTop: '5rem',
             // paddingTop: '5rem',
             padding: "5rem 2rem 2rem 2rem",
           }}
@@ -115,15 +116,15 @@ const Users = () => {
             <IoArrowBackCircleOutline />
             <Typography sx={{ textTransform: "none" }}>Back</Typography>
           </Button>
-          <Typography
+          {/* <Typography
             variant="body1"
             sx={{ textAlign: "center", color: "green" }}
           >
             User Profile
-          </Typography>
+          </Typography> */}
           <Box
             sx={{
-              boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.1)",
+              boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.05)",
               padding: "1rem",
             }}
           >
