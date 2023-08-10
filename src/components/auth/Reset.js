@@ -48,7 +48,11 @@ const Reset = () => {
       <ToastContainer />
       <Container
         maxWidth="xs"
-        sx={{ marginTop: "5rem", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}
+        sx={{
+          marginTop: "8rem",
+          boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.05)",
+          borderRadius: '10px'
+        }}
       >
         <Box
           sx={{
@@ -58,7 +62,7 @@ const Reset = () => {
             textAlign: "center",
           }}
         >
-          <Logo />
+          {/* <Logo /> */}
           <Typography
             variant="h5"
             sx={{
@@ -99,9 +103,9 @@ const Reset = () => {
                 sx={{
                   bgcolor: "green",
                   color: "#fff",
-                  width: "45ch",
+                  width: "38ch",
                   marginTop: "1.5rem",
-                  padding: "0.8rem",
+                  // padding: "0.8rem",
                   textTransform: "none",
                   "&:hover": {
                     bgcolor: "darkgreen",
@@ -111,9 +115,6 @@ const Reset = () => {
                 Reset password
               </Button>
             </div>
-            <Button component={Link} to="/login">
-              login
-            </Button>
           </Box>
         </Box>
       </Container>

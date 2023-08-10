@@ -8,7 +8,7 @@ import { AiOutlineEyeInvisible } from "react-icons/ai";
 import { AiOutlineEye } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth} from "../../firebase/config";
+import { auth } from "../../firebase/config";
 import Loader from "../loader/Loader";
 import { signup } from "../../redux/slice/authSlice";
 import { useDispatch } from "react-redux";
@@ -70,7 +70,7 @@ const Register = () => {
           uid: user.uid,
         })
       );
-  
+
       setIsLoading(false);
       toast.success("Registration successful");
       navigate(`/manage-interests`);
@@ -89,18 +89,24 @@ const Register = () => {
       {isLoading && <Loader />}
       <Container
         maxWidth="xs"
-        sx={{ marginTop: "2rem", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}
+        sx={{
+          padding: "1rem",
+          marginTop: "5rem",
+          boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.05)",
+          height: "fit-content",
+          borderRadius: "10px",
+        }}
       >
         <Box
           sx={{
-            paddingTop: "1rem",
-            paddingBottom: "2rem",
+            // paddingTop: "1rem",
+            // paddingBottom: "2rem",
             bgcolor: "#fff",
-            height: "70vh",
+            height: "fit-content",
             textAlign: "center",
           }}
         >
-          <Logo />
+          {/* <Logo /> */}
           <Typography
             variant="h5"
             sx={{
@@ -117,6 +123,9 @@ const Register = () => {
             component="form"
             sx={{
               "& .MuiTextField-root": { m: 1, width: "45ch" },
+              "@media (max-width: 700px)": {
+                "& .MuiTextField-root": { m: 1, width: "100%" },
+              },
             }}
             noValidate
             autoComplete="off"
@@ -130,6 +139,7 @@ const Register = () => {
                 onChange={(e) => handleInputChange(e)}
               />
               <TextField
+                sx={{ "@media (max-width: 700px)": { width: "100px" } }}
                 label="Last Name"
                 id="outlined-size-normal"
                 size="medium"
@@ -191,14 +201,17 @@ const Register = () => {
                   },
                 }}
               >
-                Continue
+                {isLoading ? "Loading" : "Continue"}
               </Button>
               <Typography
                 variant="body2"
-                sx={{ textAlign: "right", marginTop: "1rem" }}
+                sx={{ textAlign: "center", marginTop: "2rem" }}
               >
                 Already have a RadBlog account?
-                <Link style={{ color: "black" }} to="/login">
+                <Link
+                  style={{ color: "green", textDecoration: "none" }}
+                  to="/login"
+                >
                   &nbsp; Sign in
                 </Link>
               </Typography>

@@ -49,7 +49,7 @@ const Banner = () => {
                 fontSize: "3rem",
                 marginBottom: "1rem",
                 "@media (max-width: 800px)": {
-                  fontSize: "2rem",
+                  fontSize: "1.8rem",
                   fontWeight: 600,
                   padding: "1rem 0rem",
                 },

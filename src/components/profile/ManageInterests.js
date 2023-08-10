@@ -13,6 +13,7 @@ import {
   signup,
 } from "../../redux/slice/authSlice";
 import { ToastContainer, toast } from "react-toastify";
+import Loader from "../loader/Loader";
 
 const ManageInterests = () => {
   const dispatch = useDispatch();
@@ -47,21 +48,23 @@ const ManageInterests = () => {
   ];
 
   const [selectedInterests, setSelectedInterests] = useState([]);
-
+  const [isLoading, setIsLoading] = useState(false);
   const handleInterestToggle = (interest) => {
     setSelectedInterests((prevInterests) => {
       if (prevInterests.includes(interest)) {
         return prevInterests.filter((item) => item !== interest);
-      } else {
+      } else if (prevInterests.length < 4) {
         return [...prevInterests, interest];
+      } else {
+        return prevInterests;
       }
     });
   };
 
   const formHandler = async (e) => {
     e.preventDefault();
-
     try {
+      setIsLoading(true);
       const signUpTime = Timestamp.now().toDate();
 
       const userData = {
@@ -84,7 +87,9 @@ const ManageInterests = () => {
           id: user,
         })
       );
+      setIsLoading(false);
       const usersRef = await addDoc(collection(db, "users"), userData);
+
       navigate(`/login`);
     } catch (error) {
       toast.error(error.message);
@@ -97,10 +102,15 @@ const ManageInterests = () => {
 
   return (
     <>
+      {isLoading && <Loader />}
       {<ToastContainer />}
       <Container
         maxWidth="sm"
-        sx={{ height: "85vh", boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.02)" }}
+        sx={{
+          height: "85vh",
+          boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.02)",
+          marginTop: "6rem",
+        }}
       >
         <Button
           onClick={backHandler}
@@ -116,7 +126,7 @@ const ManageInterests = () => {
         </Button>
         <Typography
           variant="h5"
-          sx={{ fontWeight: 600, textAlign: "center", fontSize: "2rem" }}
+          sx={{ fontWeight: 600, textAlign: "center", fontSize: "1.8rem" }}
         >
           Manage Your Interests
         </Typography>
@@ -138,7 +148,11 @@ const ManageInterests = () => {
               variant={
                 selectedInterests.includes(interest) ? "contained" : "outlined"
               }
-              sx={{ margin: "1rem", borderRadius: "10px" }}
+              sx={{
+                margin: "1rem",
+                borderRadius: "10px",
+                "@media (max-width: 700px)": { margin: "0.3rem" },
+              }}
               onClick={() => handleInterestToggle(interest)}
             >
               {interest}
@@ -155,9 +169,10 @@ const ManageInterests = () => {
             "&:hover": {
               bgcolor: "#008000",
             },
+            "@media (max-width: 700px)": { marginTop: "1rem" },
           }}
         >
-          Save Changes
+          {isLoading ? "Loading" : "  Save Changes"}
         </Button>
       </Container>
     </>

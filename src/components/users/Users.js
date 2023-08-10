@@ -1,4 +1,11 @@
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { db } from "../../firebase/config";
@@ -31,55 +38,82 @@ const Users = () => {
 
   useEffect(() => {
     fetchUserData(id);
-    fetchBlogData(id);
-  }, []);
-
-  const fetchUserData = (id) => {
+    // fetchBlogData(id);
+  }, [id]);
+  const fetchUserData = async (id) => {
     try {
       setIsLoading(true);
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("id", "==", id)); // Modify this line
-      onSnapshot(q, (snapshot) => {
-        const userDoc = snapshot.docs[0]; // Get the first document from the query result
-        if (userDoc) {
-          const userData = userDoc.data();
-          setUser(userData);
-        }
-        console.log(user);
-        setIsLoading(false);
-      });
-    } catch (error) {
-      setIsLoading(false);
-      console.log(error.message);
-    }
-  };
-
-  const fetchBlogData = (id) => {
-    try {
-      setIsLoading(true);
-      const usersRef = collection(db, "blogs");
-      const q = query(usersRef);
-      onSnapshot(q, (snapshot) => {
-        const allBlogs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log(allBlogs);
-
-        const userBlogs = allBlogs.find(
-          (blog) => blog.postedBy === userdisplayName
+      const userDoc = await doc(db, "users", id);
+      const userData = (await getDoc(userDoc)).data();
+      setUser(userData);
+      console.log(user);
+      if (userData) {
+        const blogsQuery = query(
+          collection(db, "blogs"),
+          where("postedBy", "==", userData.id)
         );
-        setBlog(userBlogs);
-
-        // const userProfile = allBlogs.find((blog) => blog.id === id);
-        // // setUser(userProfile);
-        // console.log(userProfile);
-      });
+        const unsubscribe = onSnapshot(blogsQuery, (snapshot) => {
+          const userBlogs = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setBlog(userBlogs[0]);
+          setIsLoading(false);
+        });
+        return () => unsubscribe();
+      } else {
+        setIsLoading(false);
+      }
     } catch (error) {
-      setIsLoading(false);
       console.log(error.message);
+      setIsLoading(false);
     }
   };
+
+  // try {
+  //   setIsLoading(true);
+  //   const usersRef = collection(db, "users");
+  //   const q = query(usersRef, where("id", "==", id));
+  //   onSnapshot(q, (snapshot) => {
+  //     const userDoc = snapshot.docs[0];
+  //     if (userDoc) {
+  //       const userData = userDoc.data();
+  //       setUser(userData);
+  //     }
+  //     console.log(user);
+  //     setIsLoading(false);
+  //   });
+  // } catch (error) {
+  //   setIsLoading(false);
+  //   console.log(error.message);
+  // }
+
+  // const fetchBlogData = (id) => {
+  //   try {
+  //     setIsLoading(true);
+  //     const usersRef = collection(db, "blogs");
+  //     const q = query(usersRef);
+  //     onSnapshot(q, (snapshot) => {
+  //       const allBlogs = snapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //       console.log(allBlogs);
+
+  //       const userBlogs = allBlogs.find(
+  //         (blog) => blog.postedBy === userdisplayName
+  //       );
+  //       setBlog(userBlogs);
+
+  //       // const userProfile = allBlogs.find((blog) => blog.id === id);
+  //       // // setUser(userProfile);
+  //       // console.log(userProfile);
+  //     });
+  //   } catch (error) {
+  //     setIsLoading(false);
+  //     console.log(error.message);
+  //   }
+  // };
   const formatDate = (timestamp) => {
     const date = timestamp.toDate();
     const options = {
@@ -102,10 +136,8 @@ const Users = () => {
       <Container maxWidth="md">
         <Box
           sx={{
-            // boxShadow: "2px 4px 4px 2px rgba(0,0,0,0.05)",
             height: "fit-contnent",
-            marginTop: '5rem',
-            // paddingTop: '5rem',
+            marginTop: "5rem",
             padding: "5rem 2rem 2rem 2rem",
           }}
         >
@@ -116,12 +148,7 @@ const Users = () => {
             <IoArrowBackCircleOutline />
             <Typography sx={{ textTransform: "none" }}>Back</Typography>
           </Button>
-          {/* <Typography
-            variant="body1"
-            sx={{ textAlign: "center", color: "green" }}
-          >
-            User Profile
-          </Typography> */}
+
           <Box
             sx={{
               boxShadow: "0px 2px 4px 4px rgba(0,0,0,0.05)",
@@ -162,12 +189,15 @@ const Users = () => {
               <Typography variant="h5" sx={{ marginBottom: "1rem" }}>
                 {blog && blog.title}
               </Typography>
-              {/* <img
-              src={blog.imageURL}
-              alt={blog.title}
-              width={500}
-              style={{ marginBottom: "1rem" }}
-            /> */}
+              {blog && (
+                <img
+                  src={blog.imageURL}
+                  alt="image"
+                  width={500}
+                  style={{ marginBottom: "1rem" }}
+                />
+              )}
+
               <BlogDetail content={blog && blog.content}></BlogDetail>
             </div>
           </Box>

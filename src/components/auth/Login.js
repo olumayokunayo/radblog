@@ -33,6 +33,8 @@ const Login = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
         toast.success("Login successful");
+        localStorage.removeItem("likedBlogs");
+        localStorage.removeItem("bookmarkedBlogs");
         setIsLoading(false);
         navigate("/");
       })
@@ -63,11 +65,11 @@ const Login = () => {
       .then((userCredential) => {
         const user = userCredential.user;
         const { email, uid, displayName } = user;
-        console.log(user);
         setIsLoading(false);
         toast.success("Login successful");
         dispatch(login({ email, uid, displayName }));
         navigate("/");
+        window.location.reload();
       })
       .catch((error) => {
         setIsLoading(false);
@@ -81,17 +83,22 @@ const Login = () => {
       {isLoading && <Loader />}
       <Container
         maxWidth="xs"
-        sx={{ marginTop: "5rem", boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}
+        sx={{
+          marginTop: "6rem",
+          boxShadow: "2px 4px 4px 8px rgba(0,0,0,0.05)",
+          height: "fit-content",
+          borderRadius: "10px",
+        }}
       >
         <Box
           sx={{
             paddingTop: "2rem",
             bgcolor: "#fff",
-            height: "65vh",
+            height: "fit-content",
             textAlign: "center",
           }}
         >
-          <Logo />
+          {/* <Logo /> */}
           <Typography
             variant="h5"
             sx={{
@@ -127,6 +134,9 @@ const Login = () => {
             component="form"
             sx={{
               "& .MuiTextField-root": { m: 1, width: "50ch" },
+              "@media (max-width: 700px)": {
+                "& .MuiTextField-root": { m: 1, width: "100%" },
+              },
             }}
             noValidate
             autoComplete="off"
@@ -186,14 +196,17 @@ const Login = () => {
                   },
                 }}
               >
-                Sign in
+                {isLoading ? "Loading" : " Sign in"}
               </Button>
               <Typography
                 variant="body2"
-                sx={{ textAlign: "right", marginTop: "1rem" }}
+                sx={{ textAlign: "center", marginTop: "3rem" }}
               >
                 Don't have an account? &nbsp;
-                <Link style={{ color: "black" }} to="/register">
+                <Link
+                  style={{ color: "green", textDecoration: "none" }}
+                  to="/register"
+                >
                   Sign up
                 </Link>
               </Typography>

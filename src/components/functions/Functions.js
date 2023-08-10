@@ -1,5 +1,12 @@
 import { db } from "../../firebase/config";
-import { collection, addDoc, getDocs, where, query } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  where,
+  query,
+  deleteDoc,
+} from "firebase/firestore";
 
 // function to add a liked post to firestore
 
@@ -51,4 +58,35 @@ const getBookmarkedPosts = async (userId) => {
   return bookmarkedPosts;
 };
 
-export { addLikedPost, addBookmarkedPost, getLikedPosts, getBookmarkedPosts };
+// function to remove liked post
+const removeLikedPost = async (userId, postId) => {
+  const likedPostsRef = collection(db, "likedPosts");
+  const q = query(
+    likedPostsRef,
+    where("userId", "==", userId),
+    where("postId", "==", postId)
+  );
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => deleteDoc(doc.ref));
+};
+
+// function to removed bookmarked post
+
+const removedBookmarkedPost = async (userId, postId) => {
+  const bookmarkedPostsRef = collection(db, "bookmarkedPosts");
+  const q = query(
+    bookmarkedPostsRef,
+    where("userId", "==", userId),
+    where("postId", "==", postId)
+  );
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => deleteDoc(doc.ref));
+};
+export {
+  addLikedPost,
+  addBookmarkedPost,
+  getLikedPosts,
+  getBookmarkedPosts,
+  removeLikedPost,
+  removedBookmarkedPost,
+};

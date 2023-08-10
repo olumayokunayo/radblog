@@ -121,31 +121,31 @@ const Profile = () => {
     setIsBioEditing(true);
   };
 
-  const saveHandler = async () => {
-    try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef);
-      onSnapshot(q, (snapshot) => {
-        const allUsers = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log(allUsers);
-        const userDat = allUsers.find((user) => user.id === id);
-        console.log(userDat);
+  // const saveHandler = async () => {
+  //   try {
+  //     const usersRef = collection(db, "users");
+  //     const q = query(usersRef);
+  //     onSnapshot(q, (snapshot) => {
+  //       const allUsers = snapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //       console.log(allUsers);
+  //       const userDat = allUsers.find((user) => user.id === id);
+  //       console.log(userDat);
 
-        if (userDat) {
-          console.log(true);
-          const userDocRef = doc(db, "users", userDat.id);
-          updateDoc(userDocRef, {
-            about: bio.text,
-          });
-        }
-      });
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
+  //       if (userDat) {
+  //         console.log(true);
+  //         const userDocRef = doc(db, "users", id);
+  //         updateDoc(userDocRef, {
+  //           about: bio.text,
+  //         });
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.log(error.message);
+  //   }
+  // };
 
   const backHandler = () => {
     navigate("/blog");
@@ -154,7 +154,7 @@ const Profile = () => {
     <>
       {isLoading && <Loader />}
       <Container
-        maxWidth="md"
+        maxWidth="sm"
         sx={{
           height: "fit-content",
           // boxShadow: "2px 2px 8px 4px rgba(0,0,0,0.05)",
@@ -266,7 +266,7 @@ const Profile = () => {
                   <Button
                     variant="outlined"
                     color="primary"
-                    onClick={saveHandler}
+                    // onClick={saveHandler}
                   >
                     Save
                   </Button>

@@ -24,11 +24,10 @@ import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import { AiOutlineLogout } from "react-icons/ai";
 import { signOut } from "firebase/auth";
 import Loader from "../loader/Loader";
-import { SHOW_WRITE_POST, selectIsShown } from "../../redux/slice/showSlice";
+import { SHOW_WRITE_POST } from "../../redux/slice/showSlice";
 import "./Header.css";
 
 const Header = () => {
-  const isShown = useSelector(selectIsShown);
   const userdisplayName = useSelector(selectDisplayName);
   console.log(userdisplayName);
   const navigate = useNavigate();
@@ -68,6 +67,8 @@ const Header = () => {
     signOut(auth)
       .then(() => {
         setIsLoading(false);
+        localStorage.removeItem("likedBlogs")
+        localStorage.removeItem("bookmarkedBlogs")
         navigate("/login");
       })
       .catch((error) => {
@@ -123,7 +124,7 @@ const Header = () => {
               className={scrollPage ? "fixed" : ""}
               sx={{
                 backgroundColor: "#ffffff",
-                boxShadow: "none",
+                boxShadow: "0px 2px 2px 2px rgba(0,0,0,0.01)",
                 padding: "0.5rem 8rem",
                 "@media (max-width: 800px)": {
                   flexDirection: "column",

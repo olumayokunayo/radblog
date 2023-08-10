@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Container from "@mui/material/Container";
 import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
-import Search from "../search/Search";
 import Interests from "../interests/Interests";
 import { SET_BLOG, selectBlogs } from "../../redux/slice/postSlice";
 import { useDispatch, useSelector } from "react-redux";
 import {
   collection,
-  doc,
-  getDoc,
-  getDocs,
   onSnapshot,
   orderBy,
   query,
@@ -29,8 +25,7 @@ import BookmarkIcon from "@mui/icons-material/Bookmark";
 import {
   addBookmarkedPost,
   addLikedPost,
-  getBookmarkedPosts,
-  getLikedPosts,
+  removedBookmarkedPost,
 } from "../functions/Functions";
 
 // edit <p> tag from content
@@ -56,6 +51,7 @@ const Blog = () => {
   const dispatch = useDispatch();
   const allBlogData = useSelector(selectBlogs);
   const id = useSelector(selectUserId);
+  console.log(id);
   const [filteredData, setFilteredData] = useState("");
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [selectedInterest, setSelectedInterest] = useState("All");
@@ -116,8 +112,6 @@ const Blog = () => {
     );
     setFilteredData(filteredBlogs);
     setIsFilterActive(filteredBlogs.length > 0);
-    console.log(filteredData);
-    console.log(searchInput);
   };
 
   const clearHandler = () => {
@@ -155,10 +149,12 @@ const Blog = () => {
       [postId]: !bookmarkedPosts[postId],
     };
     localStorage.setItem("bookmarkedBlogs", JSON.stringify(updatedBookmarked));
+    setBookmarkedPosts(updatedBookmarked);
     if (updatedBookmarked[postId]) {
       addBookmarkedPost(id, postId);
+    } else {
+      removedBookmarkedPost(id, postId);
     }
-    setBookmarkedPosts(updatedBookmarked);
   };
 
   useEffect(() => {
@@ -173,45 +169,10 @@ const Blog = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchLikedPosts = async () => {
-      const likedPosts = await getLikedPosts(id);
-      const likedPostsData = [];
-
-      for (const postId of likedPosts) {
-        const postsRef = doc(db, "blogs", postId);
-        const postDoc = await getDoc(postsRef);
-        if (postDoc.exists()) {
-          likedPostsData.push({ id: postDoc.id, ...postDoc.data() });
-        }
-      }
-      console.log(likedPostsData);
-    };
-
-    const fetchBookmarkedPosts = async () => {
-      const bookmarkedPosts = await getBookmarkedPosts(id);
-      const bookmarkedPostsData = [];
-
-      for (const postId of bookmarkedPosts) {
-        const postsRef = doc(db, "blogs", postId);
-        const postsDoc = await getDoc(postsRef);
-        if (postsDoc.exists()) {
-          bookmarkedPostsData.push({ id: postsDoc.id, ...postsDoc.data() });
-        }
-      }
-      console.log(bookmarkedPostsData);
-    };
-    fetchLikedPosts();
-    fetchBookmarkedPosts();
-  }, []);
   return (
     <>
       {isLoading && <Loader />}
-      <Container
-        maxWidth="xl"
-        sx={{marginTop: '6rem'}}
-      >
-      {/* <Typography variant="h3" sx={{color: '#222', textAlign: 'center', fontWeight: 600, marginBottom: '2rem'}}>Blog.</Typography> */}
+      <Container maxWidth="xl" sx={{ marginTop: "6rem" }}>
         <Container maxWidth="md" sx={{}}>
           <Box
             sx={{
